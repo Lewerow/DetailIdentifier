@@ -52,5 +52,5 @@ MESSAGE("-- Using production code include directory: ${PRODUCTION_INCLUDE_DIR}")
 ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(executor)
 
-ADD_DEPENDENCIES(Executor TestSelector)
-ADD_DEPENDENCIES(Tester TestSelector)
+ADD_DEPENDENCIES(executor preprocessor vectorizer interpreter modeller)
+ADD_DEPENDENCIES(tester preprocessor vectorizer interpreter modeller)
