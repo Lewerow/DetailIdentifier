@@ -47,9 +47,8 @@ IF (${PRODUCTION_INCLUDE_DIR} STREQUAL "")
     MESSAGE(FATAL_ERROR "PRODUCTION_INCLUDE_DIR shall be set by cmake files in production code")
 ENDIF(${PRODUCTION_INCLUDE_DIR} STREQUAL "")
 
-MESSAGE("-- Using production code include directory: ${PRODUCTION_INCLUDE_DIR}")
-
 ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(executable)
 
-ADD_DEPENDENCIES(executor preprocessor vectorizer interpreter modeller)
-ADD_DEPENDENCIES(tester preprocessor vectorizer interpreter modeller)
+ADD_DEPENDENCIES(detail_identifier preprocessor vectorizer interpreter modeller executor)
+ADD_DEPENDENCIES(tester preprocessor vectorizer interpreter modeller executor)

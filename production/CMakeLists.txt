@@ -7,6 +7,8 @@ SET(PRODUCTION_DIR ${ROOT_DIR}/production)
 SET(PRODUCTION_INCLUDE_DIR ${PRODUCTION_DIR}/include)
 SET(PRODUCTION_INCLUDE_DIR ${PRODUCTION_DIR}/include PARENT_SCOPE)
 
+MESSAGE("-- Production code directory: " ${PRODUCTION_DIR})
+MESSAGE("-- Production code includes: " ${PRODUCTION_INCLUDE_DIR})
+
 ADD_SUBDIRECTORY(libs)
 ADD_SUBDIRECTORY(subsystems)
-MESSAGE("-- Production code directory: " ${PRODUCTION_DIR})
