@@ -36,4 +36,4 @@ INCLUDE_DIRECTORIES(${TURTLE_ROOT})
 
 LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 ADD_EXECUTABLE(tester ${SOURCES})
-TARGET_LINK_LIBRARIES(tester preprocessor vectorizer interpreter modeller ${CUSTOM_LIBRARIES} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+TARGET_LINK_LIBRARIES(tester preprocessor vectorizer interpreter modeller executor ${CUSTOM_LIBRARIES} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
