@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv)
 {
-    exec::executor e;
+    executor::executor e;
     return e.execute(argc, argv);
 }

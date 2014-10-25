@@ -1,7 +1,7 @@
 #ifndef EXECUTOR_H_mdiewfm49fmuifmvrekmoiewmfioemfiemfi34emf
 #define EXECUTOR_H_mdiewfm49fmuifmvrekmoiewmfioemfiemfi34emf
 
-namespace exec
+namespace executor
 {
     class executor
     {

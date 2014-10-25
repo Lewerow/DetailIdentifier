@@ -1,6 +1,6 @@
 #include <executor/executor.h>
 
-namespace exec
+namespace executor
 {
     int executor::execute(int argc, char** argv)
     {
