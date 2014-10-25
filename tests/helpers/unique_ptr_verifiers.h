@@ -1,0 +1,7 @@
+#ifndef UNIQUE_PTR_VERIFIERS_mfioremgf4jgruieojfoiewjwejo3w4jgf45igjreofjodoiewjiowejfoef
+#define UNIQUE_PTR_VERIFIERS_mfioremgf4jgruieojfoiewjwejo3w4jgf45igjreofjodoiewjiowejfoef
+
+#include <memory>
+
+
+#endif

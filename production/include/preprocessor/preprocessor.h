@@ -10,7 +10,7 @@ namespace preprocessor
 	public:
 		virtual ~preprocessor() {}
 
-		virtual std::unique_ptr<output> preprocess(std::unique_ptr<input> in) = 0; 
+		virtual std::unique_ptr<output> preprocess(std::unique_ptr<input> in) = 0;
 	};
 }
 
