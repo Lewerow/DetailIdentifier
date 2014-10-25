@@ -20,3 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+Some of the libraries used by this application are licensed under GPL. This makes them automatically 
+available under GPL license, unfortunately. Sorry for that.
+Of course, if you are able to use this code without utilizing it's GPL dependencies, it is available under MIT license.

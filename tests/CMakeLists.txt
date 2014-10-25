@@ -9,7 +9,7 @@ SET(TEST_FRAMEWORK_INCLUDE_DIRS ${TEST_DIR}/doubles/*.h ${TEST_DIR}/helpers/*.h)
 MESSAGE("-- Test code directory: " ${TEST_DIR})
 
 FILE (GLOB HEADERS ${TEST_DIR}/*/*.hpp)
-FILE (GLOB SOURCES ${TEST_DIR}/testcases/*.cpp ${TEST_DIR}/helpers/*.cpp ${TEST_DIR}/doubles/*.cpp)
+FILE (GLOB SOURCES ${TEST_DIR}/testcases/*.cpp ${TEST_DIR}/testcases/*/*.cpp ${TEST_DIR}/helpers/*.cpp ${TEST_DIR}/doubles/*.cpp)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 

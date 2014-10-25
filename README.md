@@ -11,6 +11,7 @@ Project uses a variety of libraries, including:
  * OpenCV 2.4
  * OpenCASCADE 6.7.1
  * Tesseract-OCR 3.0.2
+ * Potrace 1.11
 
 So make sure you have all of them installed when trying to compile DetailIndentifier.
 
@@ -19,6 +20,13 @@ Additionally other libraries are used, but their code is included in repository,
  * Lua
 
 Please note that this is not yet even version alpha, so may have no needed functionality
+
+=================
+**Dependencies**
+=================
+
+You may encounter trouble during building one of libraries that detail_identifier depends on (especially on M$ Windows without Cygwin. £inux and Unix system support Makefiles)
+In such case please check out dependency_hacks directory - you may find some useful stuff there (e.g. CMakeFiles for various projects)
 
 =================
 **Installation**
