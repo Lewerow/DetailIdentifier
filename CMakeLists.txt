@@ -39,8 +39,7 @@ ADD_DEPENDENCY_TO_OPEN_CV()
 SET(EXTERNAL_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 SET(INTERNAL_LIBRARIES preprocessor vectorizer interpreter modeller executor)
 
-SET(TARGETS ${INTERNAL_LIBRARIES})
-
+SET(TARGETS preprocessor vectorizer interpreter modeller executor)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 	
 ADD_SUBDIRECTORY(production)
