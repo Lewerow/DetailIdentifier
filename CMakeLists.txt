@@ -43,15 +43,20 @@ SET(INTERNAL_LIBRARIES preprocessor vectorizer interpreter modeller executor)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 	
 ADD_SUBDIRECTORY(production)
+ADD_DEPENDENCIES(executor preprocessor vectorizer interpreter modeller)
 
 IF (${PRODUCTION_INCLUDE_DIR} STREQUAL "")
     MESSAGE(FATAL_ERROR "PRODUCTION_INCLUDE_DIR shall be set by cmake files in production code")
 ENDIF(${PRODUCTION_INCLUDE_DIR} STREQUAL "")
 
 INCLUDE_DIRECTORIES(${PRODUCTION_INCLUDE_DIR})
-ADD_SUBDIRECTORY(tests)
-ADD_SUBDIRECTORY(executable)
 
-ADD_DEPENDENCIES(detail_identifier executor)
-ADD_DEPENDENCIES(executor preprocessor vectorizer interpreter modeller)
-ADD_DEPENDENCIES(tester preprocessor vectorizer interpreter modeller executor)
+IF(NOT DEFINED WITH_TESTS OR WITH_TESTS)
+    ADD_SUBDIRECTORY(tests)
+    ADD_DEPENDENCIES(tester executor)
+ENDIF(NOT DEFINED WITH_TESTS OR WITH_TESTS)
+
+IF(NOT DEFINED WITH_EXECUTABLE OR WITH_EXECUTABLE)
+    ADD_SUBDIRECTORY(executable)
+    ADD_DEPENDENCIES(detail_identifier executor)
+ENDIF(NOT DEFINED WITH_EXECUTABLE OR WITH_EXECUTABLE)
