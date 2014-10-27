@@ -6,15 +6,11 @@ PROJECT(tester)
 SET(TEST_DIR ${ROOT_DIR}/tests)
 SET(TEST_FRAMEWORK_INCLUDE_DIRS ${TEST_DIR})
 
-MESSAGE("-- Test code directory: " ${TEST_DIR})
+MESSAGE(STATUS "Test code directory: " ${TEST_DIR})
 
 FILE (GLOB HEADERS ${TEST_DIR}/*/*.hpp)
 FILE (GLOB SOURCES ${TEST_DIR}/testcases/*.cpp ${TEST_DIR}/testcases/*/*.cpp ${TEST_DIR}/helpers/*.cpp ${TEST_DIR}/doubles/*.cpp)
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
-INCLUDE_DIRECTORIES(${PRODUCTION_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${TEST_FRAMEWORK_INCLUDE_DIRS})
 
 IF(NOT DEFINED TURTLE_ROOT)
     SET(TURTLE_ROOT $ENV{TURTLE_ROOT})
@@ -25,10 +21,10 @@ IF(NOT DEFINED TURTLE_ROOT)
   "You need to set TURTLE_ROOT environment variable to path where Turtle Mock is installed. "
   "Turtle Mock can be downloaded for free from http://turtle.sourceforge.net/") 
 ENDIF()
-MESSAGE("-- Found Turtle Mock in: " ${TURTLE_ROOT})
+MESSAGE(STATUS "Found Turtle Mock in: " ${TURTLE_ROOT})
 
 INCLUDE_DIRECTORIES(${TURTLE_ROOT})
+INCLUDE_DIRECTORIES(${TEST_FRAMEWORK_INCLUDE_DIRS})
 
-LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 ADD_EXECUTABLE(tester ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(tester preprocessor vectorizer interpreter modeller executor ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+TARGET_LINK_LIBRARIES(tester ${INTERNAL_LIBRARIES} ${EXTERNAL_LIBRARIES})
