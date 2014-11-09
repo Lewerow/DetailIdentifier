@@ -1,0 +1,11 @@
+#ifndef PREPROCESSOR_OPTIONS_H_Dmkow3kf0934fmvtrklmvruiegvrtgerjfiuewjfoiewjkfd9e8fhgvnjkfdgvdgrg45g4g
+#define PREPROCESSOR_OPTIONS_H_Dmkow3kf0934fmvtrklmvruiegvrtgerjfiuewjfoiewjkfd9e8fhgvnjkfdgvdgrg45g4g
+
+#include <boost/program_options/options_description.hpp>
+
+namespace preprocessor
+{
+	boost::program_options::options_description setup_options();
+}
+
+#endif
