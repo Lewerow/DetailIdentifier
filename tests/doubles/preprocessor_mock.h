@@ -3,13 +3,23 @@
 
 #include <turtle/mock.hpp>
 
+#include <doubles/logger_mock.h>
+
 #include <preprocessor/preprocessor.h>
+#include <preprocessor/configuration.h>
+
+#include <helpers/minimal_configuration.h>
 
 namespace mocks
 {
 	MOCK_BASE_CLASS(preprocessor, ::preprocessor::preprocessor)
 	{
+		preprocessor() : ::preprocessor::preprocessor(::preprocessor::configuration(helpers::get_minimal_complete_configuration(), log))
+		{}
+
 		MOCK_METHOD_EXT(preprocess, 1, std::unique_ptr<::preprocessor::output>(std::unique_ptr<::preprocessor::input>), preprocess);
+
+		mocks::logger log;
 	};
 }
 

@@ -1,5 +1,4 @@
 #include <executor/executor.h>
-#include <boost/program_options.hpp>
 
 #include <preprocessor/options.h>
 #include <executor/options.h>
@@ -14,15 +13,6 @@
 
 namespace
 {
-	boost::program_options::options_description get_all_options()
-	{
-		boost::program_options::options_description all_options;
-		all_options.add(executor::setup_options());
-		all_options.add(preprocessor::setup_options());
-
-		return all_options;
-	}
-
 	boost::program_options::variables_map setup_options(int argc, char** argv, const boost::program_options::options_description& all_options, logger::logger& log)
 	{
 		boost::program_options::variables_map vars;
@@ -36,8 +26,11 @@ namespace
 		}
 		catch (boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::program_options::reading_file> > ex)
 		{
-			log.warning_log(std::string("Error while reading configuration from file: ") + ex.what() + ".");
-			log.info_log("Proceeding with startup");
+			if (!vars.at("config_file").defaulted())
+			{
+				log.warning_log(std::string("Error while reading configuration from file: ") + ex.what() + ".");
+				log.info_log("Proceeding with startup");
+			}
 		}
 
 		return vars;
@@ -75,7 +68,7 @@ namespace executor
     int executor::execute(int argc, char** argv)
 	{
 		logger::command_line_logger log;
-		boost::program_options::options_description all_options(get_all_options());
+		boost::program_options::options_description all_options(all_application_options());
 		boost::program_options::variables_map params(setup_parameters(argc, argv, all_options, log));
 
 		bool all_defaulted = true;
@@ -91,4 +84,13 @@ namespace executor
 
         return 0;
     }
+	
+	boost::program_options::options_description executor::all_application_options()
+	{
+		boost::program_options::options_description all_options;
+		all_options.add(::executor::setup_options());
+		all_options.add(preprocessor::setup_options());
+
+		return all_options;
+	}
 }

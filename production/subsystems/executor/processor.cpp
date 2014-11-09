@@ -12,6 +12,9 @@ namespace executor
 		preprocessor(std::move(prep)), vectorizer(std::move(vec)), interpreter(std::move(interp)), modeller(std::move(model))
 	{}
 
+	processor::~processor()
+	{}
+
 	std::unique_ptr<modeller::output> processor::process(std::unique_ptr<preprocessor::input> input)
 	{
 		std::unique_ptr<preprocessor::output> preprocessed_data = preprocessor->preprocess(std::move(input));

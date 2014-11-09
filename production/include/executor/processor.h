@@ -32,6 +32,8 @@ namespace executor
 	{
 	public:
 		processor(std::unique_ptr<preprocessor::preprocessor>, std::unique_ptr<vectorizer::vectorizer>, std::unique_ptr<interpreter::interpreter>, std::unique_ptr<modeller::modeller>);
+		
+		~processor();
 
 		std::unique_ptr<modeller::output> process(std::unique_ptr<preprocessor::input> input);
 	private:

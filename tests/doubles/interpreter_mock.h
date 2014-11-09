@@ -3,13 +3,23 @@
 
 #include <turtle/mock.hpp>
 
+#include <doubles/logger_mock.h>
+
 #include <interpreter/interpreter.h>
+#include <interpreter/configuration.h>
+
+#include <helpers/minimal_configuration.h>
 
 namespace mocks
 {
 	MOCK_BASE_CLASS(interpreter, ::interpreter::interpreter)
 	{
+		interpreter() : ::interpreter::interpreter(::interpreter::configuration(helpers::get_minimal_complete_configuration(), log))
+		{}
+
 		MOCK_METHOD_EXT(generate_interpretation, 1, std::unique_ptr<::interpreter::output>(std::unique_ptr<::interpreter::input>), generate_interpretation);
+
+		mocks::logger log;
 	};
 }
 

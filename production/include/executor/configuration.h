@@ -1,9 +1,9 @@
-#ifndef PREPROCESSOR_CONFIGURATION_H_fioewfm4guufkdmslfwemfi34mfgunijtrkgofr34f34fj43if43
-#define PREPROCESSOR_CONFIGURATION_H_fioewfm4guufkdmslfwemfi34mfgunijtrkgofr34f34fj43if43
+#ifndef EXECUTOR_CONFIGURATION_FOIEJf9ejw98fjerfjkdmcxlxdk0923j4fuierjndfkljweorifrjhneijkdewdwqdwqd
+#define EXECUTOR_CONFIGURATION_FOIEJf9ejw98fjerfjkdmcxlxdk0923j4fuierjndfkljweorifrjhneijkdewdwqdwqd
 
 #include <common/basic_configuration.h>
 
-namespace preprocessor
+namespace executor
 {
 	class configuration : public common::basic_configuration
 	{
@@ -13,8 +13,7 @@ namespace preprocessor
 		~configuration();
 
 		std::string input_filename() const;
-
-		configuration(const configuration&) = delete;
+		std::string output_filename() const;
 	private:
 		std::unique_ptr<impl> pimpl;
 	};

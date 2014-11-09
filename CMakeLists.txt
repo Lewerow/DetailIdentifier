@@ -38,13 +38,17 @@ ADD_DEPENDENCY_TO_BOOST("1.55.0")
 ADD_DEPENDENCY_TO_OPEN_CV()
 
 SET(EXTERNAL_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-SET(INTERNAL_LIBRARIES logger preprocessor vectorizer interpreter modeller executor)
+SET(INTERNAL_LIBRARIES logger common preprocessor vectorizer interpreter modeller executor)
 
-SET(TARGETS logger preprocessor vectorizer interpreter modeller executor)
+SET(TARGETS logger common preprocessor vectorizer interpreter modeller executor)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 ADD_SUBDIRECTORY(production)
-ADD_DEPENDENCIES(executor logger preprocessor vectorizer interpreter modeller)
+ADD_DEPENDENCIES(preprocessor common logger)
+ADD_DEPENDENCIES(vectorizer common logger)
+ADD_DEPENDENCIES(interpreter common logger)
+ADD_DEPENDENCIES(modeller common logger)
+ADD_DEPENDENCIES(executor logger common preprocessor vectorizer interpreter modeller)
 
 IF (${PRODUCTION_INCLUDE_DIR} STREQUAL "")
     MESSAGE(FATAL_ERROR "PRODUCTION_INCLUDE_DIR shall be set by cmake files in production code")
@@ -55,13 +59,13 @@ INCLUDE_DIRECTORIES(${LIBRARY_INCLUDE_DIRS})
 
 IF(NOT DEFINED WITH_TESTS OR WITH_TESTS)
     ADD_SUBDIRECTORY(tests)
-    ADD_DEPENDENCIES(tests executor)
+    ADD_DEPENDENCIES(tests ${INTERNAL_LIBRARIES})
 	SET(TARGETS ${TARGETS} tests)
 ENDIF(NOT DEFINED WITH_TESTS OR WITH_TESTS)
 
 IF(NOT DEFINED WITH_EXECUTABLE OR WITH_EXECUTABLE)
     ADD_SUBDIRECTORY(executable)
-    ADD_DEPENDENCIES(executable executor potrace)
+    ADD_DEPENDENCIES(executable ${INTERNAL_LIBRARIES} potrace)
 	SET(TARGETS ${TARGETS} executable)
 ENDIF(NOT DEFINED WITH_EXECUTABLE OR WITH_EXECUTABLE)
 
