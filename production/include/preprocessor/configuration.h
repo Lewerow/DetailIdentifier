@@ -11,11 +11,12 @@ namespace preprocessor
 	public:
 		configuration(const boost::program_options::variables_map&, logger::logger&);
 		~configuration();
-
+		
+		void set_input_filename(const std::string& path);
 		std::string input_filename() const;
 
 		configuration(const configuration&) = delete;
-	private:
+	protected:
 		std::unique_ptr<impl> pimpl;
 	};
 }

@@ -15,11 +15,17 @@ namespace common
 
 	basic_configuration::basic_configuration(const boost::program_options::variables_map& vars, logger::logger& log) : pimpl(std::make_unique<impl>(&log))
 	{
-		pimpl->workspace_path = vars.at("working_directory").as<std::string>();
+		if (vars.count("working_directory"))
+			set_workspace(vars.at("working_directory").as<std::string>());
 	}
 
 	basic_configuration::~basic_configuration()
 	{}
+
+	void basic_configuration::set_workspace(const std::string& path)
+	{
+		pimpl->workspace_path = path;
+	}
 
 	std::string basic_configuration::workspace_path() const
 	{

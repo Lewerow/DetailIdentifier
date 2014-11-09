@@ -8,7 +8,7 @@
 #include <preprocessor/preprocessor.h>
 #include <preprocessor/configuration.h>
 
-#include <helpers/minimal_configuration.h>
+#include <helpers/simple_configuration.h>
 
 namespace mocks
 {

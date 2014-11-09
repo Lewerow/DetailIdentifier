@@ -11,13 +11,13 @@ Project uses a variety of libraries, including:
  * OpenCV 2.4
  * OpenCASCADE 6.7.1
  * Tesseract-OCR 3.0.2
- * Potrace 1.11
 
 So make sure you have all of them installed when trying to compile DetailIndentifier.
 
 Additionally other libraries are used, but their code is included in repository, so there is no need to have them already installed. These include:
  * PugiXML
  * Lua
+ * Potrace 1.11
 
 Please note that this is not yet even version alpha, so may have no needed functionality
 

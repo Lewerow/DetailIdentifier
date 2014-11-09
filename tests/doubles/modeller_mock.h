@@ -8,7 +8,7 @@
 #include <modeller/modeller.h>
 #include <modeller/configuration.h>
 
-#include <helpers/minimal_configuration.h>
+#include <helpers/simple_configuration.h>
 
 namespace mocks
 {

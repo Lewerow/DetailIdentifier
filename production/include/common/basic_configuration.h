@@ -25,12 +25,13 @@ namespace common
 	public:
 		basic_configuration(const boost::program_options::variables_map&, logger::logger&);
 		~basic_configuration();
-
+		
+		void set_workspace(const std::string& path);
 
 		std::string workspace_path() const;
 		logger::logger& log() const;
 
-	private:
+	protected:
 		std::unique_ptr<impl> pimpl;
 	};
 }
