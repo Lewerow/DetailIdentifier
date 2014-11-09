@@ -11,6 +11,11 @@ namespace boost
 	}
 }
 
+namespace logger
+{
+	class logger;
+}
+
 namespace executor
 {
 	class application;
@@ -18,7 +23,7 @@ namespace executor
 	class configurator
 	{
 	public:
-		configurator(const boost::program_options::variables_map& application_params);
+		configurator(const boost::program_options::variables_map& application_params, logger::logger& log);
 		~configurator();
 
 		application& application() const;

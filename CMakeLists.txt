@@ -38,13 +38,13 @@ ADD_DEPENDENCY_TO_BOOST("1.55.0")
 ADD_DEPENDENCY_TO_OPEN_CV()
 
 SET(EXTERNAL_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-SET(INTERNAL_LIBRARIES preprocessor vectorizer interpreter modeller executor)
+SET(INTERNAL_LIBRARIES logger preprocessor vectorizer interpreter modeller executor)
 
-SET(TARGETS preprocessor vectorizer interpreter modeller executor)
+SET(TARGETS logger preprocessor vectorizer interpreter modeller executor)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 ADD_SUBDIRECTORY(production)
-ADD_DEPENDENCIES(executor preprocessor vectorizer interpreter modeller)
+ADD_DEPENDENCIES(executor logger preprocessor vectorizer interpreter modeller)
 
 IF (${PRODUCTION_INCLUDE_DIR} STREQUAL "")
     MESSAGE(FATAL_ERROR "PRODUCTION_INCLUDE_DIR shall be set by cmake files in production code")
