@@ -27,17 +27,14 @@ ADD_DEFINITIONS(-DMKBITMAP="\\"MkBitmap\\"")
 ADD_LIBRARY(potracelib ${SOURCES} ${HEADERS})
 
 ADD_EXECUTABLE(potrace ${CODE_DIR}/main.c ${CODE_DIR}/main.h)  
-ADD_EXECUTABLE(potrace_demo ${CODE_DIR}/potracelib_demo.c)  
 ADD_EXECUTABLE(mkbitmap ${CODE_DIR}/mkbitmap.c)  
 
-SET(TARGETS potrace potrace_demo mkbitmap potracelib)
+SET(TARGETS potrace mkbitmap potracelib)
 
 ADD_DEPENDENCIES(mkbitmap potracelib)
-ADD_DEPENDENCIES(potrace_demo potracelib mkbitmap)
 ADD_DEPENDENCIES(potrace potracelib mkbitmap)
 
 TARGET_LINK_LIBRARIES(potrace potracelib)
-TARGET_LINK_LIBRARIES(potrace_demo potracelib)
 TARGET_LINK_LIBRARIES(mkbitmap potracelib)
 	
 IF(MSVC)
@@ -56,3 +53,7 @@ GET_PROPERTY(Potrace_location TARGET potrace PROPERTY LOCATION)
 GET_PROPERTY(Mkbitmap_location TARGET mkbitmap PROPERTY LOCATION)
 MESSAGE(STATUS "Potrace executable location = ${Potrace_location}")
 MESSAGE(STATUS "Mkbitmap executable location = ${Mkbitmap_location}")
+
+SET_PROPERTY(TARGET mkbitmap PROPERTY FOLDER "libs/potrace/mkbitmap")
+SET_PROPERTY(TARGET potrace PROPERTY FOLDER "libs/potrace/potrace")
+SET_PROPERTY(TARGET potracelib PROPERTY FOLDER "libs/potrace/potracelib")

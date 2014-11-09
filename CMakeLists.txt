@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT (DetailIdentifier)
 
 SET(ROOT_DIR ${CMAKE_SOURCE_DIR})
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 INCLUDE(${ROOT_DIR}/buildsystem/compiler_support.cmake)
 INCLUDE(${ROOT_DIR}/buildsystem/library_support.cmake)
