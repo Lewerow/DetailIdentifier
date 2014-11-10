@@ -4,6 +4,7 @@
 #include <turtle/mock.hpp>
 
 #include <doubles/logger_mock.h>
+#include <doubles/os_proxy_mock.h>
 
 #include <vectorizer/vectorizer.h>
 #include <vectorizer/configuration.h>
@@ -14,7 +15,7 @@ namespace mocks
 {
 	MOCK_BASE_CLASS(vectorizer, ::vectorizer::vectorizer)
 	{
-		vectorizer() : ::vectorizer::vectorizer(::vectorizer::configuration(helpers::get_minimal_complete_configuration(), log))
+		vectorizer(std::shared_ptr<mocks::os_proxy> os) : ::vectorizer::vectorizer(::vectorizer::configuration(helpers::get_minimal_complete_configuration(), log, os))
 		{}
 
 		MOCK_METHOD_EXT(vectorize, 1, std::unique_ptr<::vectorizer::output>(std::unique_ptr<::vectorizer::input>), vectorize);

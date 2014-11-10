@@ -20,9 +20,10 @@ BOOST_AUTO_TEST_CASE(basic_sanity)
 	config.set_input_filename(TEST_FILES_DIRECTORY_STRING + "preprocessor/in_sanity.jpg");
 
 	preprocessor::preprocessor p(config);
-	p.preprocess(std::unique_ptr<preprocessor::input>());
+	auto out = p.preprocess(std::unique_ptr<preprocessor::input>());
 
 	BOOST_CHECK(boost::filesystem::exists(TEST_FILES_DIRECTORY_STRING + "workspace/preprocessed.pgm"));
+	BOOST_CHECK_EQUAL(TEST_FILES_DIRECTORY_STRING + "workspace/preprocessed.pgm", out->filename);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

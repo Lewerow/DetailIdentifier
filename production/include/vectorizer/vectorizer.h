@@ -9,11 +9,15 @@ namespace vectorizer
 	class configuration;
 	class vectorizer
 	{
+		class impl;
 	public:
 		vectorizer(const configuration&);
 		virtual ~vectorizer();
 
 		virtual std::unique_ptr<output> vectorize(std::unique_ptr<input> in);
+
+	private:
+		std::unique_ptr<impl> pimpl;
 	};
 }
 

@@ -1,0 +1,6 @@
+If you encounter problems with linking OpenCV on Visual Studio, make sure that same Runtime Library is selected for all components (it'll usually be Multi-threaded Debug DLL).
+To check it out, go to Configuration Properties -> C/C++ -> Code Generation -> Runtime Library.
+All linked libraries need to have same version. This includes:
+- all local libraries
+- Boost
+- OpenCV and its dependencies

@@ -30,7 +30,7 @@ FUNCTION(ADD_DEPENDENCY_TO_OPEN_CV)
     
 	MESSAGE(STATUS "Using OpenCV version: ${OpenCV_VERSION}")
     MESSAGE(STATUS "Using OpenCV libraries: ${OpenCV_LIBS}")
-    MESSAGE(STATUS "Using OpenCV libraries from: ${OpenCV_LIB_DIR}")
+    MESSAGE(STATUS "In theory (seems that it doesn't really work this way) using OpenCV libraries from: ${OpenCV_LIB_DIR}")
     MESSAGE(STATUS "Using OpenCV headers from: ${OpenCV_INCLUDE_DIRS}")
 	
 	SET(OpenCV_LIBS ${OpenCV_LIBS} PARENT_SCOPE)

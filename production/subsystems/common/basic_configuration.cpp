@@ -22,8 +22,11 @@ namespace common
 	basic_configuration::~basic_configuration()
 	{}
 
-	void basic_configuration::set_workspace(const std::string& path)
+	void basic_configuration::set_workspace(std::string path)
 	{
+		if (path.back() != '/' && path.back() != '\\')
+			path.push_back('/');
+
 		pimpl->workspace_path = path;
 	}
 

@@ -37,6 +37,7 @@ FIND_PACKAGE(Threads REQUIRED)
 ADD_DEPENDENCY_TO_BOOST("1.55.0")
 ADD_DEPENDENCY_TO_OPEN_CV()
 
+    MESSAGE(STATUS "Really using OpenCV libraries from: ${OpenCV_LIB_DIR}")
 SET(EXTERNAL_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 SET(INTERNAL_LIBRARIES logger common preprocessor vectorizer interpreter modeller executor)
 

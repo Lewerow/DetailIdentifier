@@ -4,6 +4,9 @@
 #include <memory>
 #include <string>
 
+#include <common/basic_configuration.h>
+#include <executor/os_proxy.h>
+
 namespace boost
 {
 	namespace program_options
@@ -19,15 +22,15 @@ namespace logger
 
 namespace vectorizer
 {
-	class configuration
+	class configuration : public common::basic_configuration
 	{
 		class impl;
 	public:
-		configuration(const boost::program_options::variables_map&, logger::logger&);
+		configuration(const boost::program_options::variables_map&, logger::logger&, std::shared_ptr<executor::os_proxy>);
 		~configuration();
 
-		std::string workspace_path() const;
-		logger::logger& log() const;
+		void set_os_proxy(std::shared_ptr<executor::os_proxy>);
+		executor::os_proxy& os_proxy() const;
 	private:
 		std::unique_ptr<impl> pimpl;
 	};

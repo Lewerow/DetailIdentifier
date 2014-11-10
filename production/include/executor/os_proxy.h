@@ -9,8 +9,8 @@ namespace executor
 	class os_proxy
 	{
 	public:
-		int call(const std::string& application, const std::vector<std::string>& arguments);
-		std::string get_current_working_directory();
+		virtual int call(const std::string& application, const std::vector<std::string>& arguments);
+		virtual std::string get_current_working_directory();
 	};
 }
 
