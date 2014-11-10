@@ -11,4 +11,9 @@ MESSAGE(STATUS "Production code directory: " ${PRODUCTION_DIR})
 MESSAGE(STATUS "Production code includes: " ${PRODUCTION_INCLUDE_DIR})
 
 ADD_SUBDIRECTORY(libs)
+
+MESSAGE(STATUS "Using libboard includes from: " ${LIBBOARD_INCLUDE_DIR})
+
 ADD_SUBDIRECTORY(subsystems)
+
+SET(LIBRARIES_INCLUDE_DIRS ${LIBBOARD_INCLUDE_DIR})

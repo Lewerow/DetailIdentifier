@@ -1,0 +1,3 @@
+[submodule "production/libs/libboard/libboard"]
+	path = production/libs/libboard/libboard
+	url = http://git.code.sf.net/p/libboard/source-code
