@@ -26,7 +26,7 @@ Please note that this is not yet even version alpha, so may have no needed funct
 =================
 
 You may encounter trouble during building one of libraries that detail_identifier depends on (especially on M$ Windows without Cygwin. £inux and Unix system support Makefiles)
-In such case please check out dependency_hacks directory - you may find some useful stuff there (e.g. CMakeFiles for various projects)
+In such case please check out dependency_hacks directory - you may find some useful stuff there.
 
 =================
 **Installation**

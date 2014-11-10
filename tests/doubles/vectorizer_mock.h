@@ -15,7 +15,7 @@ namespace mocks
 {
 	MOCK_BASE_CLASS(vectorizer, ::vectorizer::vectorizer)
 	{
-		vectorizer(std::shared_ptr<mocks::os_proxy> os) : ::vectorizer::vectorizer(::vectorizer::configuration(helpers::get_minimal_complete_configuration(), log, os))
+		vectorizer(std::shared_ptr<mocks::os_proxy> os) : ::vectorizer::vectorizer(std::make_shared<::vectorizer::configuration>(helpers::get_minimal_complete_configuration(), log, os))
 		{}
 
 		MOCK_METHOD_EXT(vectorize, 1, std::unique_ptr<::vectorizer::output>(std::unique_ptr<::vectorizer::input>), vectorize);

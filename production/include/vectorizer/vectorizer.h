@@ -11,7 +11,7 @@ namespace vectorizer
 	{
 		class impl;
 	public:
-		vectorizer(const configuration&);
+		vectorizer(std::shared_ptr<configuration>);
 		virtual ~vectorizer();
 
 		virtual std::unique_ptr<output> vectorize(std::unique_ptr<input> in);

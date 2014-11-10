@@ -1,0 +1,10 @@
+#ifndef VECTORIZER_EXCEPTIONS_H_Niufm239jf9843jfurjgnklfjdsadiwqdu2378fh4ygheufhdjsajdkjsandu32hj98fh43t
+#define VECTORIZER_EXCEPTIONS_H_Niufm239jf9843jfurjgnklfjdsadiwqdu2378fh4ygheufhdjsajdkjsandu32hj98fh43t
+
+#include <exception>
+
+namespace vectorizer
+{
+}
+
+#endif

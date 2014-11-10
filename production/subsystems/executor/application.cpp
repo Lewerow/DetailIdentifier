@@ -37,7 +37,7 @@ namespace executor
 
 		std::unique_ptr<vectorizer::vectorizer> configured_vectorizer() const
 		{
-			return std::make_unique<vectorizer::vectorizer>(*vectorizer_config);
+			return std::make_unique<vectorizer::vectorizer>(vectorizer_config);
 		}
 
 		std::unique_ptr<interpreter::interpreter> configured_interpreter() const

@@ -8,8 +8,9 @@ namespace mocks
 {
 	MOCK_BASE_CLASS(os_proxy, executor::os_proxy)
 	{
-		MOCK_METHOD_EXT(call, 2, int(const std::string&, const std::vector<std::string>&), call);
+		MOCK_METHOD_EXT(call, 2, void(const std::string&, const std::vector<std::string>&), call);
 		MOCK_METHOD_EXT(get_current_working_directory, 0, std::string(), get_current_working_directory);
+		MOCK_METHOD_EXT(copy, 2, void(const std::string&, const std::string&), copy);
 	};
 }
 

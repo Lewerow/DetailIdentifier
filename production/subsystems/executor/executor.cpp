@@ -1,7 +1,10 @@
 #include <executor/executor.h>
 
+#include <vectorizer/options.h>
 #include <preprocessor/options.h>
 #include <executor/options.h>
+
+
 #include <executor/version.h>
 #include <executor/configurator.h>
 #include <executor/application.h>
@@ -90,6 +93,7 @@ namespace executor
 		boost::program_options::options_description all_options;
 		all_options.add(::executor::setup_options());
 		all_options.add(preprocessor::setup_options());
+		all_options.add(vectorizer::setup_options());
 
 		return all_options;
 	}
