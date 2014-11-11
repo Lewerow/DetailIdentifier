@@ -89,24 +89,24 @@ SET(lib_src
   )
 
 ADD_LIBRARY(board STATIC ${lib_src})
-SET_TARGET_PROPERTIES(board PROPERTIES DEBUG_POSTFIX _d)
 
 ADD_LIBRARY(board-dynamic SHARED ${lib_src})
 SET_TARGET_PROPERTIES(board-dynamic PROPERTIES OUTPUT_NAME "board")
 SET_TARGET_PROPERTIES(board-dynamic PROPERTIES PREFIX "lib")
 
-FOREACH( EXAMPLE logo example1 example2 example3 example4
-    arithmetic ellipse graph arrows  ruler koch clipping
-    flag scale_ellipse line_style )
-  ADD_EXECUTABLE(
-    ${EXAMPLE}
-    examples/${EXAMPLE}.cpp
-    )
-  TARGET_LINK_LIBRARIES(
-    ${EXAMPLE}
-    debug board_d
-    optimized board
-    )
-  SET_TARGET_PROPERTIES(${EXAMPLE} PROPERTIES DEBUG_POSTFIX _d)
-ENDFOREACH(EXAMPLE)
-
+IF(DEFINED WITH_LIBBOARD_EXAMPLES AND WITH_LIBBOARD_EXAMPLES EQUAL ON)
+	FOREACH( EXAMPLE logo example1 example2 example3 example4
+		arithmetic ellipse graph arrows  ruler koch clipping
+		flag scale_ellipse line_style )
+	  ADD_EXECUTABLE(
+		${EXAMPLE}
+		examples/${EXAMPLE}.cpp
+		)
+	  TARGET_LINK_LIBRARIES(
+		${EXAMPLE}
+		debug board
+		optimized board
+		)
+	  SET_TARGET_PROPERTIES(${EXAMPLE} PROPERTIES DEBUG_POSTFIX)
+	ENDFOREACH(EXAMPLE)
+ENDIF(DEFINED WITH_LIBBOARD_EXAMPLES AND WITH_LIBBOARD_EXAMPLES EQUAL ON)

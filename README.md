@@ -18,6 +18,7 @@ Additionally other libraries are used, but their code is included in repository,
  * PugiXML
  * Lua
  * Potrace 1.11
+ * Libboard 0.9
 
 Please note that this is not yet even version alpha, so may have no needed functionality
 
