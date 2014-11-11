@@ -11,7 +11,7 @@ Project uses a variety of libraries, including:
  * OpenCV 2.4
  * OpenCASCADE 6.7.1 // not yet
  * Tesseract-OCR 3.0.2 // not yet
- * Juce 3.0.8 (only downloaded)
+ * Juce 3.0.8 (only downloaded) // currently disabled
 
 So make sure you have all of them installed when trying to compile DetailIndentifier.
 
@@ -19,9 +19,10 @@ Additionally other libraries are used, but their code is included in repository,
  * PugiXML // not yet
  * Lua // not yet
  * Potrace 1.11
- * Libboard 0.9
- * dxflib 3.3.4
+ * Libboard 0.9 // currently disabled
+ * dxflib 3.3.4 // currently disabled
  * Turtle 1.2.6
+ * Fog rev. 1056 // currently disabled
 
 Please note that this is not yet even version alpha, so may have no needed functionality
 

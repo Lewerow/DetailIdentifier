@@ -16,7 +16,7 @@ namespace
 {
 	const std::string input_path_svg = TEST_FILES_DIRECTORY_STRING + "interpreter/in_sanity.svg";
 	const std::string input_path_pgm = TEST_FILES_DIRECTORY_STRING + "interpreter/in_sanity.pgm";
-	const std::string output_path = TEST_FILES_DIRECTORY_STRING + "workspace/interpreted.svg";
+	const std::string output_path_dxf = TEST_FILES_DIRECTORY_STRING + "workspace/interpreted.dxf";
 }
 
 struct interpreter_fixture
@@ -45,22 +45,25 @@ BOOST_AUTO_TEST_CASE(basic_sanity_ut)
 	interpreter::interpreter i(config);
 	
 	MOCK_EXPECT(os->load_file).with(input_path_svg).once().returns(helpers::empty_svg_file);
+	MOCK_EXPECT(os->save_file).with(output_path_dxf, mock::any).once();
 	auto out = i.generate_interpretation(std::move(in));
+
+
 }
-/*
+
 BOOST_AUTO_TEST_CASE(basic_sanity_mt)
-{
+{/*
 	BOOST_REQUIRE(boost::filesystem::exists(input_path_svg));
 	BOOST_REQUIRE(boost::filesystem::exists(input_path_pgm));
-	if (boost::filesystem::exists(output_path))
-		boost::filesystem::remove(output_path);
+	if (boost::filesystem::exists(output_path_dxf))
+		boost::filesystem::remove(output_path_dxf);
 
-	BOOST_REQUIRE(!boost::filesystem::exists(output_path));
+	BOOST_REQUIRE(!boost::filesystem::exists(output_path_dxf));
 	
 	interpreter::interpreter i(config);
 	auto out = i.generate_interpretation(std::move(in));
 
-	BOOST_CHECK(boost::filesystem::exists(out->svg_filename));
-}*/
+	BOOST_CHECK(boost::filesystem::exists(out->dxf_filename));*/
+}
 
 BOOST_AUTO_TEST_SUITE_END()

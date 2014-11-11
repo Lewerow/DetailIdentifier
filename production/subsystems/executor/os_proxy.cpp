@@ -25,6 +25,12 @@ namespace executor
 		boost::filesystem::copy(source, destination);
 	}
 
+	void os_proxy::save_file(const std::string& name, const std::string& content)
+	{
+		std::ofstream t(name);
+		t << content;
+	}
+
 	std::string os_proxy::load_file(const std::string& path)
 	{
 		std::ifstream t(path);
@@ -33,6 +39,6 @@ namespace executor
 		std::string buffer(size, ' ');
 		t.seekg(0);
 		t.read(&buffer[0], size);
-		return std::move(buffer);
+		return buffer;
 	}
 }

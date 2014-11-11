@@ -13,6 +13,7 @@ namespace executor
 		virtual std::string get_current_working_directory();
 		virtual void copy(const std::string& source, const std::string& destination);
 
+		virtual void save_file(const std::string& name, const std::string& content);
 		virtual std::string load_file(const std::string& path);
 	};
 }

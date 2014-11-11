@@ -14,11 +14,12 @@ namespace interpreter
 		std::unique_ptr<output> generate_interpretation(std::unique_ptr<input> in)
 		{
 			auto out = std::make_unique<output>();
-			out->dxf_filename = "";
+			out->dxf_filename = config->workspace_path() + "interpreted.dxf";
 			out->svg_filename = config->workspace_path() + "interpreted.svg";
 
-			config->os_proxy().copy(in->svg_filename, out->svg_filename);
+			std::string input_content = config->os_proxy().load_file(in->svg_filename);
 
+			config->os_proxy().save_file(out->dxf_filename, "");
 			return out;
 		}
 
