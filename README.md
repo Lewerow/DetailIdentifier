@@ -9,17 +9,19 @@ A tool for converting scanned design sketches into 3D models
 Project uses a variety of libraries, including:
  * Boost 1.55
  * OpenCV 2.4
- * OpenCASCADE 6.7.1
- * Tesseract-OCR 3.0.2
+ * OpenCASCADE 6.7.1 // not yet
+ * Tesseract-OCR 3.0.2 // not yet
+ * Juce 3.0.8 (only downloaded)
 
 So make sure you have all of them installed when trying to compile DetailIndentifier.
 
 Additionally other libraries are used, but their code is included in repository, so there is no need to have them already installed. These include:
- * PugiXML
- * Lua
+ * PugiXML // not yet
+ * Lua // not yet
  * Potrace 1.11
  * Libboard 0.9
  * dxflib 3.3.4
+ * Turtle 1.2.6
 
 Please note that this is not yet even version alpha, so may have no needed functionality
 
@@ -33,6 +35,12 @@ In such case please check out dependency_hacks directory - you may find some use
 =================
 **Installation**
 =================
+
+You should have the following environment variables defined (if you don't want to have them as environment variables 
+you can pass them directly to CMake script via -DXXX option):
+ * BOOST_ROOT
+ * TURTLE_ROOT (in case you wish to build tests)
+ * JUCE_ROOT
 
 There are no pre-build binaries, only compilation from sources is supported. Assuming you have both OpenCV and Boost properly installed,
 following steps should be sufficient:
@@ -49,6 +57,12 @@ following steps should be sufficient:
 ***Linux***
  * make -j4
  
+***Assumptions***
+Now, this is written under assumption that you have all required libraries installed...
+You most probably don't. I'm sorry that you need to install so much stuff, but I needed to speed things up 
+as much as possible, as I was running out of time. If app will still be developed, we'll try to get rid of most dependencies
+as soon as we get some time.
+
 =================
 **Building**
 =================
