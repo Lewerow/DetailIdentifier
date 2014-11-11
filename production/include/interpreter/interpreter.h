@@ -9,11 +9,15 @@ namespace interpreter
 	class configuration;
 	class interpreter
 	{
+		class impl;
 	public:
-		interpreter(const configuration&);
+		interpreter(std::shared_ptr<configuration>);
 		virtual ~interpreter();
 
 		virtual std::unique_ptr<output> generate_interpretation(std::unique_ptr<input> in);
+
+	private:
+		std::unique_ptr<impl> pimpl;
 	};
 }
 

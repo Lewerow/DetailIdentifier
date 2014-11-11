@@ -14,7 +14,7 @@ namespace mocks
 {
 	MOCK_BASE_CLASS(preprocessor, ::preprocessor::preprocessor)
 	{
-		preprocessor() : ::preprocessor::preprocessor(::preprocessor::configuration(helpers::get_minimal_complete_configuration(), log))
+		preprocessor() : ::preprocessor::preprocessor(std::make_shared<::preprocessor::configuration>(helpers::get_minimal_complete_configuration(), log))
 		{}
 
 		MOCK_METHOD_EXT(preprocess, 1, std::unique_ptr<::preprocessor::output>(std::unique_ptr<::preprocessor::input>), preprocess);

@@ -5,7 +5,6 @@
 #include <string>
 
 #include <common/basic_configuration.h>
-#include <executor/os_proxy.h>
 
 namespace boost
 {
@@ -18,6 +17,11 @@ namespace boost
 namespace logger
 {
 	class logger;
+}
+
+namespace executor
+{
+	class os_proxy;
 }
 
 namespace vectorizer

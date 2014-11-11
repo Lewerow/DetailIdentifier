@@ -22,9 +22,9 @@ BOOST_AUTO_TEST_CASE(basic_sanity)
 	BOOST_REQUIRE(!boost::filesystem::exists(output_path));
 	
 	mocks::logger log;
-	preprocessor::configuration config(boost::program_options::variables_map{}, log);
-	config.set_workspace(TEST_FILES_DIRECTORY_STRING + "workspace");
-	config.set_input_filename(input_path);
+	auto config = std::make_shared<preprocessor::configuration>(boost::program_options::variables_map{}, log);
+	config->set_workspace(TEST_FILES_DIRECTORY_STRING + "workspace");
+	config->set_input_filename(input_path);
 
 	preprocessor::preprocessor p(config);
 	auto out = p.preprocess(std::unique_ptr<preprocessor::input>());

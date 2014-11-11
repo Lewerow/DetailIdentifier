@@ -11,7 +11,7 @@ namespace preprocessor
 	{
 		class impl;
 	public:
-		preprocessor(const configuration&);
+		preprocessor(std::shared_ptr<configuration> config);
 		virtual ~preprocessor();
 
 		virtual std::unique_ptr<output> preprocess(std::unique_ptr<input> in);

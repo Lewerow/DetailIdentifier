@@ -2,7 +2,7 @@
 
 namespace modeller
 {
-	modeller::modeller(const configuration&)
+	modeller::modeller(std::shared_ptr<configuration>)
 	{}
 
 	modeller::~modeller()
@@ -10,6 +10,6 @@ namespace modeller
 
 	std::unique_ptr<output> modeller::generate_model(std::unique_ptr<input> in)
 	{
-		return std::unique_ptr<output>();
+		return std::make_unique<output>();
 	}
 }

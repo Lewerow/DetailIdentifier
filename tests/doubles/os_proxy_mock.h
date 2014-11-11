@@ -11,6 +11,7 @@ namespace mocks
 		MOCK_METHOD_EXT(call, 2, void(const std::string&, const std::vector<std::string>&), call);
 		MOCK_METHOD_EXT(get_current_working_directory, 0, std::string(), get_current_working_directory);
 		MOCK_METHOD_EXT(copy, 2, void(const std::string&, const std::string&), copy);
+		MOCK_METHOD_EXT(load_file, 1, std::string(const std::string&), load_file);
 	};
 }
 

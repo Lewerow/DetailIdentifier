@@ -31,7 +31,7 @@ namespace vectorizer
 
 		bool convert_to_svg(const std::string& in_file, const std::string& out_file)
 		{
-			return run_potrace({ "--svg", "-o", out_file, "--", in_file });
+			return run_potrace({ "--svg", "-a", "0", "-o", out_file, "--", in_file });
 		}
 
 		bool convert_to_dxf(const std::string& in_file, const std::string& out_file)

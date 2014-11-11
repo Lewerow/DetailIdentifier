@@ -12,6 +12,8 @@ namespace executor
 		virtual void call(const std::string& application, const std::vector<std::string>& arguments);
 		virtual std::string get_current_working_directory();
 		virtual void copy(const std::string& source, const std::string& destination);
+
+		virtual std::string load_file(const std::string& path);
 	};
 }
 

@@ -14,7 +14,7 @@ namespace mocks
 {
 	MOCK_BASE_CLASS(modeller, ::modeller::modeller)
 	{
-		modeller() : ::modeller::modeller(::modeller::configuration(helpers::get_minimal_complete_configuration(), log))
+		modeller() : ::modeller::modeller(std::make_shared<::modeller::configuration>(helpers::get_minimal_complete_configuration(), log))
 		{}
 
 		MOCK_METHOD_EXT(generate_model, 1, std::unique_ptr<::modeller::output>(std::unique_ptr<::modeller::input>), generate_model);

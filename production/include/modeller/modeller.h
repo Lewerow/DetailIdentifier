@@ -10,7 +10,7 @@ namespace modeller
 	class modeller
 	{
 	public:
-		modeller(const configuration&);
+		modeller(std::shared_ptr<configuration>);
 		virtual ~modeller();
 
 		virtual std::unique_ptr<output> generate_model(std::unique_ptr<input> in);

@@ -13,16 +13,24 @@
 
 #include <helpers/unique_ptr_verifiers.h>
 
-BOOST_AUTO_TEST_SUITE(executor_tests)
+struct executor_fixture
+{
+	executor_fixture() : os_proxy_mock(std::make_shared<mocks::os_proxy>()), preprocessor_mock(std::make_unique<mocks::preprocessor>()),
+		vectorizer_mock(std::make_unique<mocks::vectorizer>(os_proxy_mock)), interpreter_mock(std::make_unique<mocks::interpreter>(os_proxy_mock)),
+		modeller_mock(std::make_unique<mocks::modeller>())
+	{}
+
+	std::shared_ptr<mocks::os_proxy> os_proxy_mock;
+	std::unique_ptr<mocks::preprocessor> preprocessor_mock;
+	std::unique_ptr<mocks::vectorizer> vectorizer_mock;
+	std::unique_ptr<mocks::interpreter> interpreter_mock;
+	std::unique_ptr<mocks::modeller> modeller_mock;
+};
+
+BOOST_FIXTURE_TEST_SUITE(executor_tests, executor_fixture)
 
 BOOST_AUTO_TEST_CASE(basic_processing_pipeline)
 {
-	std::shared_ptr<mocks::os_proxy> os_proxy_mock(std::make_shared<mocks::os_proxy>());
-	std::unique_ptr<mocks::preprocessor> preprocessor_mock(std::make_unique<mocks::preprocessor>());
-	std::unique_ptr<mocks::vectorizer> vectorizer_mock(std::make_unique<mocks::vectorizer>(os_proxy_mock));
-	std::unique_ptr<mocks::interpreter> interpreter_mock(std::make_unique<mocks::interpreter>());
-	std::unique_ptr<mocks::modeller> modeller_mock(std::make_unique<mocks::modeller>());
-
 	MOCK_EXPECT(preprocessor_mock->preprocess).once().with(nullptr).moves(nullptr);
 	MOCK_EXPECT(vectorizer_mock->vectorize).once().with(nullptr).moves(nullptr);
 	MOCK_EXPECT(interpreter_mock->generate_interpretation).once().with(nullptr).moves(nullptr);
@@ -34,11 +42,6 @@ BOOST_AUTO_TEST_CASE(basic_processing_pipeline)
 
 BOOST_AUTO_TEST_CASE(proper_data_is_passed_in_basic_processing_pipeline)
 {
-	std::shared_ptr<mocks::os_proxy> os_proxy_mock(std::make_shared<mocks::os_proxy>());
-	std::unique_ptr<mocks::preprocessor> preprocessor_mock(std::make_unique<mocks::preprocessor>());
-	std::unique_ptr<mocks::vectorizer> vectorizer_mock(std::make_unique<mocks::vectorizer>(os_proxy_mock));
-	std::unique_ptr<mocks::interpreter> interpreter_mock(std::make_unique<mocks::interpreter>());
-	std::unique_ptr<mocks::modeller> modeller_mock(std::make_unique<mocks::modeller>());
 
 	std::unique_ptr<preprocessor::input> preprocessor_in = std::make_unique<preprocessor::input>();
 	std::unique_ptr<vectorizer::input> vectorizer_in = std::make_unique<vectorizer::input>();

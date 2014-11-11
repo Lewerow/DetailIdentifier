@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <fstream>
 
 namespace executor
 {
@@ -22,5 +23,16 @@ namespace executor
 	void os_proxy::copy(const std::string& source, const std::string& destination)
 	{
 		boost::filesystem::copy(source, destination);
+	}
+
+	std::string os_proxy::load_file(const std::string& path)
+	{
+		std::ifstream t(path);
+		t.seekg(0, std::ios::end);
+		std::size_t size = static_cast<std::size_t>(t.tellg());
+		std::string buffer(size, ' ');
+		t.seekg(0);
+		t.read(&buffer[0], size);
+		return std::move(buffer);
 	}
 }

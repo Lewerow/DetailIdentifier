@@ -32,7 +32,7 @@ namespace executor
 
 		std::unique_ptr<preprocessor::preprocessor> configured_preprocessor() const
 		{
-			return std::make_unique<preprocessor::preprocessor>(*preprocessor_config);
+			return std::make_unique<preprocessor::preprocessor>(preprocessor_config);
 		}
 
 		std::unique_ptr<vectorizer::vectorizer> configured_vectorizer() const
@@ -42,12 +42,12 @@ namespace executor
 
 		std::unique_ptr<interpreter::interpreter> configured_interpreter() const
 		{
-			return std::make_unique<interpreter::interpreter>(*interpreter_config);
+			return std::make_unique<interpreter::interpreter>(interpreter_config);
 		}
 
 		std::unique_ptr<modeller::modeller> configured_modeller() const
 		{
-			return std::make_unique<modeller::modeller>(*modeller_config);
+			return std::make_unique<modeller::modeller>(modeller_config);
 		}
 
 		std::unique_ptr<preprocessor::input> fetch_input()

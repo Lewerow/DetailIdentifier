@@ -12,38 +12,40 @@ namespace preprocessor
 	class preprocessor::impl
 	{
 	public:
-		std::string input_file;
-		std::string workspace;
-		logger::logger* log;
+		impl(std::shared_ptr<configuration> conf) : config(conf)
+		{}
+
+		std::unique_ptr<output> preprocess(std::unique_ptr<input> in)
+		{
+			cv::Mat img = cv::imread(config->input_filename());
+			cv::Mat greyscale;
+			cv::cvtColor(img, greyscale, CV_RGB2GRAY);
+
+			cv::Mat binary;
+			cv::threshold(greyscale, binary, 195, 255, CV_THRESH_BINARY);
+
+			cv::Mat erosion_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5), cv::Point(3, 3));
+			cv::Mat eroded;
+			cv::erode(binary, eroded, erosion_element);
+
+			cv::imwrite(config->workspace_path() + "preprocessed.pgm", binary);
+
+			std::unique_ptr<output> out(std::make_unique<output>());
+			out->filename = config->workspace_path() + "preprocessed.pgm";
+			return out;
+		}
+
+		std::shared_ptr<configuration> config;
 	};
 
-	preprocessor::preprocessor(const configuration& config) : pimpl(std::make_unique<impl>())
-	{
-		pimpl->input_file = config.input_filename();
-		pimpl->workspace = config.workspace_path();
-		pimpl->log = &config.log();
-	}
+	preprocessor::preprocessor(std::shared_ptr<configuration> config) : pimpl(std::make_unique<impl>(config))
+	{}
 
 	preprocessor::~preprocessor()
 	{}
 
 	std::unique_ptr<output> preprocessor::preprocess(std::unique_ptr<input> in)
 	{
-		cv::Mat img = cv::imread(pimpl->input_file);
-		cv::Mat greyscale;
-		cv::cvtColor(img, greyscale, CV_RGB2GRAY);
-
-		cv::Mat binary;
-		cv::threshold(greyscale, binary, 195, 255, CV_THRESH_BINARY);
-
-		cv::Mat erosion_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5), cv::Point(3, 3));
-		cv::Mat eroded;
-		cv::erode(binary, eroded, erosion_element);
-
-		cv::imwrite(pimpl->workspace + "preprocessed.pgm", binary);
-
-		std::unique_ptr<output> out(std::make_unique<output>());
-		out->filename = pimpl->workspace + "preprocessed.pgm";
-		return out;
+		return pimpl->preprocess(std::move(in));
 	}
 }

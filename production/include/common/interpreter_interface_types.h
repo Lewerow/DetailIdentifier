@@ -8,7 +8,11 @@ namespace interpreter
 	typedef vectorizer::output input;
 
 	class output
-	{};
+	{
+	public:
+		std::string svg_filename;
+		std::string dxf_filename;
+	};
 }
 
 #endif
