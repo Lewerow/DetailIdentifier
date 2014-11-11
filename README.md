@@ -19,6 +19,7 @@ Additionally other libraries are used, but their code is included in repository,
  * Lua
  * Potrace 1.11
  * Libboard 0.9
+ * dxflib 3.3.4
 
 Please note that this is not yet even version alpha, so may have no needed functionality
 
@@ -33,8 +34,21 @@ In such case please check out dependency_hacks directory - you may find some use
 **Installation**
 =================
 
-There are no pre-build binaries, only compilation from sources is supported.
+There are no pre-build binaries, only compilation from sources is supported. Assuming you have both OpenCV and Boost properly installed,
+following steps should be sufficient:
 
+***Common***
+
+ * mkdir out
+ * cd out
+ * cmake ..
+ 
+***Windows***
+ * msbuild /m DetailIdentifier.sln
+
+***Linux***
+ * make -j4
+ 
 =================
 **Building**
 =================
