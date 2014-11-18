@@ -16,7 +16,7 @@ Project uses a variety of libraries, including:
 So make sure you have all of them installed when trying to compile DetailIndentifier.
 
 Additionally other libraries are used, but their code is included in repository, so there is no need to have them already installed. These include:
- * PugiXML // not yet
+ * PugiXML (master)
  * Lua // not yet
  * Potrace 1.11
  * Libboard 0.9 // currently disabled
@@ -24,7 +24,8 @@ Additionally other libraries are used, but their code is included in repository,
  * Turtle 1.2.6
  * Fog rev. 1056 // currently disabled
 
-Please note that this is not yet even version alpha, so may have no needed functionality
+Please note that this is not yet even version alpha, so may have no needed functionality.
+Some libraries may be added as git submodules, so make sure you check them out
 
 =================
 **Dependencies**
