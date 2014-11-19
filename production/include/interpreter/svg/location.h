@@ -3,7 +3,7 @@
 
 namespace svg
 {
-	typedef double coordinate;
+	typedef int coordinate;
 	typedef coordinate coordinate_interval;
 
 	class location
@@ -29,5 +29,7 @@ struct std::less<svg::location>
 		return lhs.y < rhs.y;
 	}
 };
+
+bool operator==(const svg::location& lhs, const svg::location& rhs);
 
 #endif

@@ -3,16 +3,27 @@
 
 #include <interpreter/svg/location.h>
 
+#include <vector>
+#include <memory>
+
 namespace svg
 {
+	class edge;
+
 	class point
 	{
 	public:
 		point(location loc);
+		~point();
+
 		const location& location() const;
+		const std::vector<std::shared_ptr<edge> >& edges() const;
+
+		void add_edge(std::shared_ptr<edge> edge);
 
 	private:
 		svg::location location_;
+		std::vector<std::shared_ptr<edge> > edges_;
 	};
 }
 

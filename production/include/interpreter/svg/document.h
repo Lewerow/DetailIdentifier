@@ -13,7 +13,7 @@ namespace svg
 	public:
 		document(coordinate_interval width, coordinate_interval height);
 
-		const std::map<location, point>& points() const;
+		std::map<location, point>& points();
 
 		const coordinate_interval width() const;
 		const coordinate_interval height() const;

@@ -5,7 +5,7 @@ namespace svg
 	document::document(coordinate_interval width, coordinate_interval height) : dimensions(std::make_pair(width, height))
 	{}
 
-	const std::map<location, point>& document::points() const
+	std::map<location, point>& document::points()
 	{
 		return points_;
 	}
@@ -22,6 +22,6 @@ namespace svg
 
 	void document::add_point(point p)
 	{
-		points_.insert(std::make_pair(p.location(), p));
+		points_.insert(std::make_pair(p.location(), std::move(p)));
 	}
 }
