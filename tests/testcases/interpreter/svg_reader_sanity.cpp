@@ -12,6 +12,11 @@ struct reader_fixture
 	svg::reader r;
 };
 
+bool containsEndpoint(const std::vector<std::shared_ptr<svg::edge> >& edges, svg::location endpoint)
+{
+	return std::any_of(edges.begin(), edges.end(), [endpoint](const std::shared_ptr<svg::edge>& edge) {return edge->end_point()->location() == endpoint; });
+}
+
 BOOST_FIXTURE_TEST_SUITE(svg_reader_sanity, reader_fixture)
 BOOST_AUTO_TEST_CASE(empty_string_is_nullptr)
 {
@@ -37,8 +42,8 @@ BOOST_AUTO_TEST_CASE(document_with_single_line_has_two_points_one_segment_and_on
 	
 	auto edges = points.at(svg::location(0, 20)).edges();
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), edges.size());
-	BOOST_CHECK_EQUAL(svg::location(100, 200), edges.at(0)->end_point()->location());
-	BOOST_CHECK_EQUAL(svg::location(0, 20), points.at(svg::location(100, 200)).edges().at(0)->end_point()->location());
+	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(100, 200)));
+	BOOST_CHECK(std::all_of(edges.begin(), edges.end(), [](const std::shared_ptr<svg::edge>& edge) {return edge->start_point()->location() == svg::location(0, 20); }));
 }
 
 BOOST_AUTO_TEST_CASE(points_from_multiple_lines_are_shared)
@@ -57,8 +62,24 @@ BOOST_AUTO_TEST_CASE(points_from_multiple_lines_are_shared)
 	auto first_endpoint = edges.at(0)->end_point();
 	auto second_endpoint = edges.at(1)->end_point();
 	BOOST_REQUIRE_NE(first_endpoint->location(), second_endpoint->location());
-	BOOST_CHECK(first_endpoint->location() == svg::location(0, 20) || first_endpoint->location() == svg::location(500, 0));
-	BOOST_CHECK(second_endpoint->location() == svg::location(0, 20) || second_endpoint->location() == svg::location(500, 0));
+    BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(0, 20)));
+	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(500, 0)));
+}
+
+BOOST_AUTO_TEST_CASE(all_points_from_linear_path_need_to_be_obtained)
+{
+	auto res = r.parse("<svg width='400' height='400'><path d='M40,50 L200,100 l-30,20' /> </svg>");
+	auto points = res->points();
+
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(3), points.size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), points.count(svg::location(40, 50)));
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), points.count(svg::location(200, 100)));
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), points.count(svg::location(170, 120)));
+
+	auto edges = points.at(svg::location(200, 100)).edges();
+	BOOST_REQUIRE_EQUAL(static_cast<std::size_t>(2), edges.size());
+	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(40, 50)));
+	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(170, 120)));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

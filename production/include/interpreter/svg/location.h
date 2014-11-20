@@ -9,11 +9,11 @@ namespace svg
 	class location
 	{
 	public:
+		location();
 		location(coordinate x_, coordinate y_);
-		location& operator=(const location&) = delete;
 
-		const coordinate x;
-		const coordinate y;
+		coordinate x;
+		coordinate y;
 	};
 }
 

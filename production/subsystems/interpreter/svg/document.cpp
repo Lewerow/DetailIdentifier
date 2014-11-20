@@ -24,4 +24,14 @@ namespace svg
 	{
 		points_.insert(std::make_pair(p.location(), std::move(p)));
 	}
+
+	bool document::contains_point_at(svg::location loc)
+	{
+		return points_.count(loc) == 1;
+	}
+
+	point& document::at(svg::location loc)
+	{
+		return points_.at(loc);
+	}
 }

@@ -20,6 +20,9 @@ namespace svg
 
 		void add_point(point p);
 
+		bool contains_point_at(svg::location loc);
+		point& at(svg::location loc);
+
 	private:
 		std::map<location, point> points_;
 		std::pair<coordinate_interval, coordinate_interval> dimensions;

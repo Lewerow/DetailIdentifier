@@ -2,6 +2,10 @@
 
 namespace svg
 {
+
+	location::location() : x(0), y(0)
+	{}
+
 	location::location(coordinate x_, coordinate y_) : x(x_), y(y_)
 	{}
 }
