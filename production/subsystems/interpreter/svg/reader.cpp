@@ -141,13 +141,26 @@ namespace
 		return std::move(line);
 	}
 
+	raw_path close_path(std::string, const std::vector<raw_path>& history)
+	{
+		if (history.size() < 2)
+			throw std::logic_error("Too few elements for closing path");
+
+		std::unique_ptr<svg::straight_line> line(std::make_unique<svg::straight_line>());
+		line->endpoint_ = history.front()->endpoint();
+
+		return std::move(line);
+	}
+
 	std::map<char, path_element_creator> get_path_parsers()
 	{
 		std::map<char, path_element_creator> parsers;
 		parsers.insert(std::make_pair('M', move_to<absolute_location>));
 		parsers.insert(std::make_pair('m', move_to<relative_location>));
-		parsers.insert(std::make_pair('L', straight_line<absolute_location>));
+    	parsers.insert(std::make_pair('L', straight_line<absolute_location>));
 		parsers.insert(std::make_pair('l', straight_line<relative_location>));
+		parsers.insert(std::make_pair('Z', close_path));
+		parsers.insert(std::make_pair('z', close_path));
 
 		return parsers;
 	}

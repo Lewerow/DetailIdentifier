@@ -82,4 +82,21 @@ BOOST_AUTO_TEST_CASE(all_points_from_linear_path_need_to_be_obtained)
 	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(170, 120)));
 }
 
+BOOST_AUTO_TEST_CASE(triangle_can_be_analyzed)
+{
+	auto res = r.parse("<svg width='400' height='200'><path d='M10 10 l10 20 l20 -10 z' /></svg>");
+
+	BOOST_CHECK(res->contains_point_at(svg::location(10, 10)));
+	BOOST_CHECK(res->contains_point_at(svg::location(20, 30)));
+	BOOST_CHECK(res->contains_point_at(svg::location(40, 20)));
+
+	auto points = res->points();
+	BOOST_REQUIRE_EQUAL(static_cast<std::size_t>(3), res->points().size());
+
+	for (auto& p : points) 
+	{
+		BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), p.second.edges().size());
+	}
+}
+
 BOOST_AUTO_TEST_SUITE_END()
