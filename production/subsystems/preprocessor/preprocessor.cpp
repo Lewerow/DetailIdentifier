@@ -24,9 +24,9 @@ namespace preprocessor
 			cv::Mat binary;
 			cv::threshold(greyscale, binary, 195, 255, CV_THRESH_BINARY);
 
-			cv::Mat erosion_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5), cv::Point(3, 3));
-			cv::Mat eroded;
-			cv::erode(binary, eroded, erosion_element);
+//			cv::Mat erosion_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5), cv::Point(3, 3));
+//			cv::Mat eroded;
+//			cv::erode(binary, eroded, erosion_element);
 
 			cv::imwrite(config->workspace_path() + "preprocessed.pgm", binary);
 

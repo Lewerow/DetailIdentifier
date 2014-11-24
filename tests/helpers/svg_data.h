@@ -12,6 +12,11 @@ namespace helpers
 		"<g transform=\"translate(0.000000,938.000000) scale(0.100000,-0.100000)\" fill=\"#000000\" stroke=\"none\">"
 		"</g>"
 		"</svg>";
+
+	const std::string empty_pgm_file = "P5\n"
+		"1 1\n"
+		"255\n"
+		"\5\n";
 }
 
 #endif

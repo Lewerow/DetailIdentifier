@@ -12,6 +12,9 @@
 
 namespace svg
 {
+	typedef double raw_coordinate;
+	typedef raw_coordinate raw_coordinate_interval;
+
 	struct path_element
 	{
 		virtual bool is_path_start() 
@@ -68,8 +71,8 @@ namespace
 		std::string x_end = line_node.attribute("x2").value();
 		std::string y_end = line_node.attribute("y2").value();
 
-		svg::point p_start(svg::location(boost::lexical_cast<svg::coordinate_interval>(x_start), (boost::lexical_cast<svg::coordinate_interval>(y_start))));
-		svg::point p_end(svg::location(boost::lexical_cast<svg::coordinate_interval>(x_end), (boost::lexical_cast<svg::coordinate_interval>(y_end))));
+		svg::point p_start(svg::location(boost::lexical_cast<svg::raw_coordinate_interval>(x_start), (boost::lexical_cast<svg::raw_coordinate_interval>(y_start))));
+		svg::point p_end(svg::location(boost::lexical_cast<svg::raw_coordinate_interval>(x_end), (boost::lexical_cast<svg::raw_coordinate_interval>(y_end))));
 
 		doc.add_point(p_start);
 		doc.add_point(p_end);
@@ -82,7 +85,7 @@ namespace
 
 	typedef boost::char_separator<char> svg_separator;
 	typedef std::unique_ptr<svg::path_element> raw_path;
-	typedef std::function<raw_path(std::string, const std::vector<raw_path>&)> path_element_creator;
+	typedef std::function<std::vector<raw_path>(std::string, const std::vector<raw_path>&)> path_element_creator;
 
 	struct absolute_location
 	{
@@ -97,51 +100,65 @@ namespace
 		static svg::location get_starting_point(const std::vector<raw_path>& history)
 		{
 			if (history.empty())
-				throw std::logic_error("Expected element before relative location");
+				return svg::location(0, 0);
 
 			return history.back()->endpoint();
 		}
 	};
 
-	std::vector<svg::coordinate> fetch_params(std::string serialized, std::size_t param_count, const std::string& symbols)
+	std::vector<svg::raw_coordinate> fetch_params(const std::string& serialized, std::size_t param_count, const std::string& symbols)
 	{
 		svg_separator separator((symbols + " ,;").c_str(), "", boost::drop_empty_tokens);
 		boost::tokenizer<svg_separator> tokens(serialized, separator);
 
-		std::vector<svg::coordinate> coordinates;
+		std::vector<svg::raw_coordinate> coordinates;
 		for (boost::tokenizer<svg_separator>::iterator it = tokens.begin(); it != tokens.end(); ++it)
-			coordinates.push_back(boost::lexical_cast<svg::coordinate>(*it));
+			coordinates.push_back(boost::lexical_cast<svg::raw_coordinate>(*it));
 
-		if (coordinates.size() != param_count)
+		if (coordinates.size() % param_count != 0 && !coordinates.empty())
 			throw std::logic_error("Invalid number of coordinates");
-
+		
 		return coordinates;
 	}
 
 	template <typename location_policy>
-	raw_path move_to(const std::string& serialized, const std::vector<raw_path>& history)
+	std::vector<raw_path> move_to(const std::string& serialized, const std::vector<raw_path>& history)
 	{
 		auto coordinates = fetch_params(serialized, 2, "Mm");
-		std::unique_ptr<svg::path_starting_point> result(std::make_unique<svg::path_starting_point>());
+		std::unique_ptr<svg::path_starting_point> path_start(std::make_unique<svg::path_starting_point>());
 		svg::location start_point = location_policy::get_starting_point(history);
-		result->loc = svg::location(start_point.x + coordinates[0], start_point.y + coordinates[1]);
-		return std::move(result);
+		path_start->loc.x = coordinates[0] + start_point.x;
+		path_start->loc.y = coordinates[1] + start_point.y;
+
+        std::vector<raw_path> res;
+		res.push_back(std::move(path_start));
+		for (std::size_t i = 2; i < coordinates.size(); i += 2)
+		{
+			auto next_line = std::make_unique<svg::straight_line>();
+			next_line->endpoint_.x = coordinates[i] + res.back()->endpoint().x;
+			next_line->endpoint_.y = coordinates[i + 1] + res.back()->endpoint().y;
+			res.push_back(std::move(next_line));
+		}
+
+		return res;
 	}
 	
 	template <typename location_policy>
-	raw_path straight_line(std::string serialized, const std::vector<raw_path>& history)
+	std::vector<raw_path> straight_line(std::string serialized, const std::vector<raw_path>& history)
 	{
-		std::vector<svg::coordinate> coordinates = fetch_params(serialized, 2, "Ll");
+		std::vector<svg::raw_coordinate> coordinates = fetch_params(serialized, 2, "Ll");
 		std::unique_ptr<svg::straight_line> line(std::make_unique<svg::straight_line>());
 
 		svg::location start_point = location_policy::get_starting_point(history);
 		line->endpoint_.x = coordinates[0] + start_point.x;
 		line->endpoint_.y = coordinates[1] + start_point.y;
 
-		return std::move(line);
+		std::vector<raw_path> res;
+		res.push_back(std::move(line));
+		return res;
 	}
 
-	raw_path close_path(std::string, const std::vector<raw_path>& history)
+	std::vector<raw_path> close_path(std::string, const std::vector<raw_path>& history)
 	{
 		if (history.size() < 2)
 			throw std::logic_error("Too few elements for closing path");
@@ -149,7 +166,9 @@ namespace
 		std::unique_ptr<svg::straight_line> line(std::make_unique<svg::straight_line>());
 		line->endpoint_ = history.front()->endpoint();
 
-		return std::move(line);
+		std::vector<raw_path> res;
+		res.push_back(std::move(line));
+		return res;
 	}
 
 	std::map<char, path_element_creator> get_path_parsers()
@@ -191,14 +210,17 @@ namespace
 			if (i < splitted_into_tokens.size() - 1)
 				trimmed += splitted_into_tokens[++i];
 
-			raw_path element = path_parsers[trimmed[0]](trimmed, elements[current_path_number]);
-			if (element->is_path_start())
+			std::size_t k = 0;
+			auto next_elements = path_parsers[trimmed[0]](trimmed, elements[current_path_number]);
+			if (next_elements[0]->is_path_start())
 			{
 				elements.push_back(std::vector<std::unique_ptr<svg::path_element> >());
 				++current_path_number;
+				++k;
 			}
 			
-			elements[current_path_number].push_back(std::move(element));
+			for(auto& elem : next_elements)
+				elements[current_path_number].push_back(std::move(elem));
 		}
 
 		for (auto& single_path : elements)
@@ -228,6 +250,22 @@ namespace
 
 		}	
 	}
+
+	const char* ignored_tags[] = { "metadata",
+		"sodipodi:namedview",
+		"defs",
+		"" };
+
+	bool ignored(const char* node_name)
+	{
+		for (const char** tag = ignored_tags; (**tag) != 0; ++tag)
+		{
+			if (std::strcmp(node_name, *tag) == 0)
+				return true;
+		}
+
+		return false;
+	}
 }
 
 namespace svg
@@ -239,6 +277,17 @@ namespace svg
 		{
 			parsers.insert(std::make_pair("line", parse_segment));
 			parsers.insert(std::make_pair("path", parse_path));
+		}
+
+		void parse_all(const pugi::xml_node& root, svg::document& svg_doc)
+		{
+			for (auto node = root.first_child(); node; node = node.next_sibling())
+			{
+				if (std::strcmp(node.name(), "svg") == 0 || std::strcmp(node.name(), "g") == 0)
+					parse_all(node, svg_doc);
+				else if(!ignored(node.name()))
+					parsers[node.name()](node, svg_doc);
+			}
 		}
 
 		std::map < std::string, std::function<void(const pugi::xml_node&, document&)> > parsers;
@@ -260,12 +309,11 @@ namespace svg
 		if (!xml_doc.load(str.c_str()))
 			throw std::runtime_error("Cannot load given svg file");
 		
-		auto width = std::string(xml_doc.child("svg").attribute("width").value());
-		auto height = std::string(xml_doc.child("svg").attribute("height").value());
-		auto svg_doc = std::make_unique<document>(boost::lexical_cast<coordinate_interval>(width), boost::lexical_cast<coordinate_interval>(height));
+		auto width = xml_doc.child("svg").attribute("width");
+		auto height = xml_doc.child("svg").attribute("height");
+		auto svg_doc = std::make_unique<document>(width.as_double(), height.as_double());
 
-		for (auto node = xml_doc.child("svg").first_child(); node; node = node.next_sibling())
-			pimpl->parsers[node.name()](node, *svg_doc);
+		pimpl->parse_all(xml_doc.document_element(), *svg_doc);
 
 		return svg_doc;
 	}
