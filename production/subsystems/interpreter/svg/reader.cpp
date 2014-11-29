@@ -77,10 +77,10 @@ namespace
 		doc.add_point(p_start);
 		doc.add_point(p_end);
 
-		auto edge = std::make_shared<svg::segment>(doc.points().at(p_start.location()), doc.points().at(p_end.location()));
+		auto edge = std::make_shared<svg::segment>(doc.points().at(p_start.loc()), doc.points().at(p_end.loc()));
 		
-		doc.points().at(p_start.location()).add_edge(edge);
-		doc.points().at(p_end.location()).add_edge(edge->reverted());
+		doc.points().at(p_start.loc()).add_edge(edge);
+		doc.points().at(p_end.loc()).add_edge(edge->reverted());
 	}
 
 	typedef boost::char_separator<char> svg_separator;
@@ -239,7 +239,7 @@ namespace
 					else
 					{
 						doc.add_point(p);
-						doc.at(p.location()).add_edge(elem->make_edge(doc.at(elem->endpoint()), doc.at(previous_location)));
+						doc.at(p.loc()).add_edge(elem->make_edge(doc.at(elem->endpoint()), doc.at(previous_location)));
 					}
 
 					doc.at(previous_location).add_edge(elem->make_edge(doc.at(previous_location), doc.at(elem->endpoint())));

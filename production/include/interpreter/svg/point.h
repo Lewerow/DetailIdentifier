@@ -16,7 +16,7 @@ namespace svg
 		point(location loc);
 		~point();
 
-		const location& location() const;
+		const svg::location& loc() const;
 		const std::vector<std::shared_ptr<edge> >& edges() const;
 
 		void add_edge(std::shared_ptr<edge> edge);

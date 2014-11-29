@@ -15,7 +15,7 @@ namespace executor
 	configurator::configurator(const boost::program_options::variables_map& vars, logger::logger& log)
 	{
 		auto os = std::make_shared<os_proxy>();
-		app = std::make_unique<executor::whole_application>(std::make_shared<preprocessor::configuration>(vars, log), 
+		app_ = std::make_unique<executor::whole_application>(std::make_shared<preprocessor::configuration>(vars, log), 
 			std::make_shared<vectorizer::configuration>(vars, log, os),
 			std::make_shared<interpreter::configuration>(vars, log, os),
 			std::make_shared<modeller::configuration>(vars, log),
@@ -25,8 +25,8 @@ namespace executor
 	configurator::~configurator()
 	{}
 
-	executor::application& configurator::application() const
+	executor::application& configurator::app() const
 	{
-		return *app;
+		return *app_;
 	}
 }

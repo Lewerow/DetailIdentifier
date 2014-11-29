@@ -78,7 +78,7 @@ BOOST_FIXTURE_TEST_CASE(identifies_rectangle_as_single_line, interpreter_fixture
 
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.size());
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.count("image"));
-//	BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), img.at("image")->points().size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), img.at("image")->points().size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

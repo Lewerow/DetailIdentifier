@@ -1,0 +1,3 @@
+[submodule "production/libs/pugixml/pugixml_head"]
+	path = production/libs/pugixml/pugixml_head
+	url = https://github.com/zeux/pugixml

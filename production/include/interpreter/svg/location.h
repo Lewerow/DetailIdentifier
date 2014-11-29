@@ -15,21 +15,26 @@ namespace svg
 		coordinate x;
 		coordinate y;
 	};
+
+    bool operator==(const svg::location& lhs, const svg::location& rhs);
 }
 
+
 #include <functional>
-template <>
-struct std::less<svg::location>
+
+namespace std
 {
-	bool operator()(const svg::location& lhs, const svg::location& rhs)
-	{
-		if (lhs.x != rhs.x)
-			return lhs.x < rhs.x;
+  template <>
+  struct less<svg::location>
+  {
+    bool operator()(const svg::location& lhs, const svg::location& rhs) const
+    {
+      if (lhs.x != rhs.x)
+        return lhs.x < rhs.x;
 
-		return lhs.y < rhs.y;
-	}
-};
-
-bool operator==(const svg::location& lhs, const svg::location& rhs);
+      return lhs.y < rhs.y;
+    }
+  };
+}
 
 #endif

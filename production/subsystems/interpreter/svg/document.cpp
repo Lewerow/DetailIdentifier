@@ -22,7 +22,7 @@ namespace svg
 
 	void document::add_point(point p)
 	{
-		points_.insert(std::make_pair(p.location(), std::move(p)));
+		points_.insert(std::make_pair(p.loc(), std::move(p)));
 	}
 
 	bool document::contains_point_at(svg::location loc)

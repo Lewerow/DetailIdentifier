@@ -1,11 +1,11 @@
+#include <helpers/svg_helpers.h>
+
 #include <boost/test/auto_unit_test.hpp>
 
 #include <interpreter/svg/reader.h>
 #include <interpreter/svg/document.h>
 #include <interpreter/svg/edge.h>
 #include <interpreter/svg/location.h>
-
-#include <helpers/svg_helpers.h>
 
 struct reader_fixture
 {
@@ -14,7 +14,7 @@ struct reader_fixture
 
 bool containsEndpoint(const std::vector<std::shared_ptr<svg::edge> >& edges, svg::location endpoint)
 {
-	return std::any_of(edges.begin(), edges.end(), [endpoint](const std::shared_ptr<svg::edge>& edge) {return edge->end_point()->location() == endpoint; });
+	return std::any_of(edges.begin(), edges.end(), [endpoint](const std::shared_ptr<svg::edge>& edge) {return edge->end_point()->loc() == endpoint; });
 }
 
 BOOST_FIXTURE_TEST_SUITE(svg_reader_sanity, reader_fixture)
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(document_with_single_line_has_two_points_one_segment_and_on
 	auto edges = points.at(svg::location(0, 20)).edges();
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), edges.size());
 	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(100, 200)));
-	BOOST_CHECK(std::all_of(edges.begin(), edges.end(), [](const std::shared_ptr<svg::edge>& edge) {return edge->start_point()->location() == svg::location(0, 20); }));
+	BOOST_CHECK(std::all_of(edges.begin(), edges.end(), [](const std::shared_ptr<svg::edge>& edge) {return edge->start_point()->loc() == svg::location(0, 20); }));
 }
 
 BOOST_AUTO_TEST_CASE(points_from_multiple_lines_are_shared)
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(points_from_multiple_lines_are_shared)
 
 	auto first_endpoint = edges.at(0)->end_point();
 	auto second_endpoint = edges.at(1)->end_point();
-	BOOST_REQUIRE_NE(first_endpoint->location(), second_endpoint->location());
+	BOOST_REQUIRE_NE(first_endpoint->loc(), second_endpoint->loc());
     BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(0, 20)));
 	BOOST_CHECK_PREDICATE(containsEndpoint, (edges)(svg::location(500, 0)));
 }

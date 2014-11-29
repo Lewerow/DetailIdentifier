@@ -9,7 +9,7 @@ namespace svg
 	point::~point()
 	{}
 
-	const location & point::location() const
+	const svg::location & point::loc() const
 	{
 		return location_;
 	}

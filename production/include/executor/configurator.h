@@ -26,10 +26,10 @@ namespace executor
 		configurator(const boost::program_options::variables_map& application_params, logger::logger& log);
 		~configurator();
 
-		application& application() const;
+		application& app() const;
 
 	private:
-		std::unique_ptr<::executor::application> app;
+		std::unique_ptr<::executor::application> app_;
 	};
 }
 

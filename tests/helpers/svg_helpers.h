@@ -28,15 +28,13 @@ namespace boost
 				for (auto& edge : edges)
 				{
 					str << "e(";
-					print_log_value<svg::location>()(str, edge->start_point()->location());
+					print_log_value<svg::location>()(str, edge->start_point()->loc());
 					str << ", ";
-					print_log_value<svg::location>()(str, edge->end_point()->location());
+					print_log_value<svg::location>()(str, edge->end_point()->loc());
 					str << ", l:" << edge->lenght() << ")";
 
 				}
 			}
 		};
 	}
-
-	bool operator==(const svg::location& lhs, const svg::location& rhs);
 }

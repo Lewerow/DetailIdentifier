@@ -6,11 +6,27 @@
 
 #include <fstream>
 
+namespace 
+{
+    std::string app_invocation(const std::string& app)
+    {
+#ifdef WIN32
+        const std::string prefix = "";
+#else
+        const std::string prefix = app[0] == '/' ? "" : "./";
+#endif
+        return prefix + app;
+    } 
+}
+
 namespace executor
 {
 	void os_proxy::call(const std::string& application, const std::vector<std::string>& arguments)
 	{
-		std::string invocation = application + " " +boost::join(arguments, " ");
+        if(application.empty())
+            throw system_call_failure("Cannot call an empty application!");
+
+		std::string invocation = app_invocation(application) + " " +boost::join(arguments, " ");
 		if (std::system(invocation.c_str()) != EXIT_SUCCESS)
 			throw system_call_failure(invocation);
 	}

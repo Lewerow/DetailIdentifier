@@ -20,8 +20,8 @@ namespace svg
 
 	double segment::lenght() const
 	{
-		double x_diff = start.location().x - end.location().x;
-		double y_diff = start.location().y - end.location().y;
+		double x_diff = start.loc().x - end.loc().x;
+		double y_diff = start.loc().y - end.loc().y;
 
 		return std::sqrt(x_diff*x_diff + y_diff*y_diff);
 	}
