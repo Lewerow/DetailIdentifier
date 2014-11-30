@@ -19,9 +19,12 @@ namespace
 	const std::string input_svg_ut = TEST_FILES_DIRECTORY_STRING + "interpreter/in_sanity.svg";
 	const std::string input_pgm_ut = TEST_FILES_DIRECTORY_STRING + "interpreter/in_sanity.pgm";
 	const std::string output_path_dxf = TEST_FILES_DIRECTORY_STRING + "workspace/interpreted.dxf";
-	
-	const std::string input_svg_mt = TEST_FILES_DIRECTORY_STRING + "interpreter/line_interpretation/interpretation.svg";
+
+    const std::string input_svg_mt = TEST_FILES_DIRECTORY_STRING + "interpreter/line_interpretation/interpretation.svg";
 	const std::string input_pgm_mt = TEST_FILES_DIRECTORY_STRING + "interpreter/line_interpretation/interpretation.pgm";
+ 	
+	const std::string input_svg_advanced = TEST_FILES_DIRECTORY_STRING + "interpreter/line_interpretation/advanced.svg";
+	const std::string input_pgm_advanced = TEST_FILES_DIRECTORY_STRING + "interpreter/line_interpretation/advanced.pgm";
 }
 
 struct interpreter_fixture
@@ -53,6 +56,12 @@ struct interpreter_fixture_mt : interpreter_fixture
 	{}
 };
 
+struct interpreter_fixture_advanced : interpreter_fixture
+{
+    interpreter_fixture_advanced() : interpreter_fixture(input_svg_advanced, input_pgm_advanced)
+    {}
+};
+
 BOOST_AUTO_TEST_SUITE(interpreter_tests)
 
 BOOST_FIXTURE_TEST_CASE(basic_sanity_ut, interpreter_fixture_ut)
@@ -68,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(basic_sanity_ut, interpreter_fixture_ut)
 	auto out = i.generate_interpretation(std::move(in));
 }
 
-BOOST_FIXTURE_TEST_CASE(identifies_rectangle_as_single_line, interpreter_fixture_mt)
+BOOST_FIXTURE_TEST_CASE(identifies_filled_rectangle_as_single_line, interpreter_fixture_mt)
 {
 	interpreter::interpreter i(config);
 	
@@ -79,6 +88,24 @@ BOOST_FIXTURE_TEST_CASE(identifies_rectangle_as_single_line, interpreter_fixture
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.size());
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.count("image"));
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), img.at("image")->points().size());
+}
+
+BOOST_FIXTURE_TEST_CASE(identifies_not_filled_rectangle_as_four_lines, interpreter_fixture_advanced)
+{
+	interpreter::interpreter i(config);
+	
+	auto out = i.generate_interpretation(std::move(in));
+
+	const auto& img = out->layers;
+
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(1), img.count("image"));
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(4), img.at("image")->points().size());
+
+    for(auto& p: img.at("image")->points())
+    {
+        std::cout << "(" << p.first.x  << "," << p.first.y <<")" << std::endl;
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
