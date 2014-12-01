@@ -1,4 +1,4 @@
-DetailIdentifier
+﻿DetailIdentifier
 ================
 ================
 **Overview**
@@ -23,6 +23,7 @@ Additionally other libraries are used, but their code is included in repository,
  * dxflib 3.3.4 // currently disabled
  * Turtle 1.2.6
  * Fog rev. 1056 // currently disabled
+ * Waffles (master)
 
 Please note that this is not yet even version alpha, so may have no needed functionality.
 Some libraries may be added as git submodules, so make sure you check them out

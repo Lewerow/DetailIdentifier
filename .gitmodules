@@ -1,3 +1,6 @@
 [submodule "production/libs/pugixml/pugixml_head"]
 	path = production/libs/pugixml/pugixml_head
 	url = https://github.com/zeux/pugixml
+[submodule "production/libs/waffles/waffles"]
+	path = production/libs/waffles/waffles
+	url = git://git.code.sf.net/p/waffles/code

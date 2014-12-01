@@ -1,5 +1,6 @@
 #include <interpreter/interpreter.h>
 #include <interpreter/configuration.h>
+#include <interpreter/centerline_tracer.h>
 
 #include <executor/os_proxy.h>
 
@@ -12,6 +13,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 
 namespace interpreter
 {
@@ -29,7 +31,7 @@ namespace interpreter
 			
             auto docs = get_input(std::move(in));
 			
-            auto svg_out = trace_centerlines(std::move(docs.first), std::move(docs.second));
+            auto svg_out = centerline_tracer(*docs.first, docs.second).trace_centerlines();
             out->layers.insert(std::make_pair("image", std::move(svg_out)));
 
 			config->os_proxy().save_file(out->dxf_filename, "");
@@ -77,7 +79,7 @@ namespace interpreter
             
             std::vector<svg::location> clusters = clusterize(locations);
             std::vector<std::size_t> cluster_ids(locations.size()); 
-            std::transform(locations.begin(), locations.end(), cluster_ids.begin(), cluster_ids.end(), [&clusters](svg::location l) {
+            std::transform(locations.begin(), locations.end(), cluster_ids.begin(), [&clusters, this](svg::location l) -> std::size_t {
                     std::pair<std::size_t, double> closest(std::numeric_limits<std::size_t>::max(), std::numeric_limits<double>::max());
                     for(std::size_t i = 0; i < clusters.size(); ++i)
                     {
@@ -107,22 +109,23 @@ namespace interpreter
             return svg_doc;
         }
 
-        std::vector<svg::location> clusterize(const std::vector<svg::location>& locs)
-        {
-            svg::vector<svg::location> clusters;
-            clusters.push_back(locs[0]);
-            
-           const double acceptable_spread = 400;
-            const int iterations = 10;
-            do
-            {
-                auto second = find_furthest(locs, locs[0]);
-                clusters.push_back(locs[second]);
-                
-                clusters = adapt(clusters, locs, iterations)
-                auto spreads = calculate_spreads(clusters, locs);                
-            } while(!std::all_of(spreads.begin(), spreads.end(), [acceptable_spread](double spread){return spread < acceptable_spread;}));
-        }
+		std::vector<svg::location> clusterize(const std::vector<svg::location>& locs)
+		{
+			std::vector<svg::location> clusters;
+			clusters.push_back(locs[0]);
+
+			const double acceptable_spread = 400;
+			const int iterations = 10;
+			/*           do
+					   {
+						   auto second = find_furthest(locs, locs[0]);
+						   clusters.push_back(locs[second]);
+
+						   clusters = adapt(clusters, locs, iterations)
+						   auto spreads = calculate_spreads(clusters, locs);
+					   } while(!std::all_of(spreads.begin(), spreads.end(), [acceptable_spread](double spread){return spread < acceptable_spread;}));
+		   */ return clusters;
+		}
 
         std::vector<double> calculate_spreads(const std::vector<svg::location>& clusters, const std::vector<svg::location>& locs)
         {
@@ -140,8 +143,8 @@ namespace interpreter
         std::size_t find_furthest(const std::vector<svg::location>& loc, svg::location l1)
         {
             std::vector<double> distances;
-            for(std::size_t i = 0; i < line.size(); ++i)
-                distances.push_back(cartesian_distance(l1, line[i]));
+            for(std::size_t i = 0; i < loc.size(); ++i)
+                distances.push_back(cartesian_distance(l1, loc[i]));
             auto furthest = std::max_element(distances.begin(), distances.end());
             return std::distance(distances.begin(), furthest);
         }
