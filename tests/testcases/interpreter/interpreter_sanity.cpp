@@ -50,7 +50,6 @@ BOOST_FIXTURE_TEST_CASE(basic_sanity_ut, interpreter_fixture_ut)
 
 	MOCK_EXPECT(os->load_file).with(helpers::input_svg_ut).once().returns(helpers::empty_svg_file);
 	MOCK_EXPECT(os->load_file).with(helpers::input_pgm_ut).once().returns(helpers::empty_pgm_file);
-	MOCK_EXPECT(os->save_file).with(helpers::output_path_dxf, mock::any).once();
 	auto out = i.generate_interpretation(std::move(in));
 }
 

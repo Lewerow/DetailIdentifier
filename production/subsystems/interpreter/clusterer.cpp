@@ -3,14 +3,16 @@
 #include <cassert>
 #include <map>
 #include <cmath>
+#include <numeric>
 
 #include <GClasses/GCluster.h>
 
 namespace
 {
-	const double ACCEPTABLE_RATIO = 1.75;
-	const double MIN_ACCEPTABLE_DISTANCE = 0.5;
-	const std::size_t ATTEMPT_COUNT = 10;
+	const double MIN_ACCEPTABLE_DISTANCE = 5;
+	const double MAX_ACCEPTABLE_DISTANCE = 50;
+	const double MIN_DISTANCE_BETWEEN_CLUSTERS = 15;
+	const std::size_t ATTEMPT_COUNT = 20;
 
 	double waffles_distance(double* l1, double* l2)
 	{
@@ -31,23 +33,26 @@ namespace
 			distances[cluster].second += waffles_distance(locations[i], centroids[cluster]);
 		}
 		
+		bool all_acceptable = true;
 		std::vector<double> average_in_cluster;
 		for (auto& d : distances)
 		{
-			if (d.second.first == 1)
-				continue;
-
 			double average_distance = d.second.second / d.second.first;
-			if(average_distance > MIN_ACCEPTABLE_DISTANCE)
-        		average_in_cluster.push_back(average_distance);
+
+			if (average_distance > MAX_ACCEPTABLE_DISTANCE)
+				return false;
+
+			if (average_distance > MIN_ACCEPTABLE_DISTANCE)
+			{
+				all_acceptable = false;
+				average_in_cluster.push_back(average_distance);
+			}
+
 		}
 
 		std::sort(average_in_cluster.begin(), average_in_cluster.end()); // order is ASCENDING
 
-		if (average_in_cluster.size() < 2)
-			return true;
-
-		return average_in_cluster.back() / average_in_cluster.front() < ACCEPTABLE_RATIO;
+		return true;
 	}
 
 	GClasses::GMatrix setup_data(const std::vector<svg::location>& data)
@@ -70,6 +75,22 @@ namespace
 			clusters.push_back(svg::location(matrix[i][0], matrix[i][1]));
 
 		return clusters;
+	}
+
+	std::vector<std::vector<std::size_t> > find_close_clusters(const std::vector<svg::location>& clusters)
+	{
+		std::vector<std::vector<std::size_t> > close_clusters;
+		for (std::size_t i = 0; i < clusters.size(); ++i)
+		{
+			close_clusters.push_back({i});
+			for (auto j = i + 1; j < clusters.size(); ++j)
+			{
+				if (svg::cartesian_distance(clusters[i], clusters[j]) < MIN_DISTANCE_BETWEEN_CLUSTERS)
+					close_clusters.back().push_back(j);
+			}
+		}
+
+		return close_clusters;
 	}
 }
 
@@ -100,8 +121,23 @@ namespace interpreter
 			}
 		}
 
-		std::sort(clusters.begin(), clusters.end(), [](svg::location l1, svg::location l2) {return svg::cartesian_distance(l1, svg::location(0, 0)) < svg::cartesian_distance(l2, svg::location(0, 0)); });
+		std::vector<std::vector<std::size_t> > close_clusters = find_close_clusters(clusters);
+		std::vector<bool> used(close_clusters.size(), false);
+		
+		std::vector<svg::location> endpoints;
+		for (std::size_t i = 0; i < close_clusters.size(); ++i)
+		{
+			if (used[i] && (close_clusters[i].size() == 1 || std::all_of(close_clusters[i].begin(), close_clusters[i].end(), [&used](std::size_t i) {return used[i]; })))
+				continue;
 
-		return clusters;
+			svg::location sum = std::accumulate(close_clusters[i].begin(), close_clusters[i].end(), svg::location(0, 0), [&clusters](svg::location l1, std::size_t l2) {return svg::location(l1.x + clusters[l2].x, l1.y + clusters[l2].y); });
+			endpoints.push_back(svg::location(sum.x / close_clusters[i].size(), sum.y / close_clusters[i].size()));
+			
+			for (auto j : close_clusters[i])
+				used[j] = true;
+		}
+
+		std::sort(endpoints.begin(), endpoints.end(), [](svg::location l1, svg::location l2) {return svg::cartesian_distance(l1, svg::location(0, 0)) < svg::cartesian_distance(l2, svg::location(0, 0)); });
+		return endpoints;
 	}
 }

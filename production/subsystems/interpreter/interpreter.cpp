@@ -31,7 +31,10 @@ namespace interpreter
 			
             auto docs = get_input(std::move(in));
 			
-            auto svg_out = centerline_tracer(*docs.first, docs.second).trace_centerlines();
+			if (docs.first->points().empty())
+				return nullptr;
+
+	        auto svg_out = centerline_tracer(*docs.first, docs.second).trace_centerlines();
             out->layers.insert(std::make_pair("image", std::move(svg_out)));
 
 			config->os_proxy().save_file(out->dxf_filename, "");

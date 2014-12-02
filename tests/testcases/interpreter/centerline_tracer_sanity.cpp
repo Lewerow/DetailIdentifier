@@ -44,14 +44,14 @@ BOOST_FIXTURE_TEST_CASE(identifies_filled_rectangle_as_single_line, basic_tracer
 {
 	auto centerlines = tracer->trace_centerlines();
 
-//	BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), centerlines->points().size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(2), centerlines->points().size());
 }
 
 BOOST_FIXTURE_TEST_CASE(identifies_not_filled_rectangle_as_four_lines, advanced_tracer_fixture)
 {
 	auto centerlines = tracer->trace_centerlines();
 
-//	BOOST_CHECK_EQUAL(static_cast<std::size_t>(4), centerlines->points().size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(4), centerlines->points().size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
