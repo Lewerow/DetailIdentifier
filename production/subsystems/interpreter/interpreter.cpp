@@ -29,16 +29,16 @@ namespace interpreter
 			out->dxf_filename = config->workspace_path() + "interpreted.dxf";
 			out->svg_filename = config->workspace_path() + "interpreted.svg";
 			
-            auto docs = get_input(std::move(in));
+        //    auto docs = get_input(std::move(in));
 			
-			if (docs.first->points().empty())
-				return nullptr;
+	//		if (docs.first->points().empty())
+		//		return nullptr;
 
-	        auto svg_out = centerline_tracer(*docs.first, docs.second).trace_centerlines();
-            out->layers.insert(std::make_pair("image", std::move(svg_out)));
+//	        auto svg_out = centerline_tracer(*docs.first, docs.second).trace_centerlines();
+//          out->layers.insert(std::make_pair("image", std::move(svg_out)));
 
-			config->os_proxy().save_file(out->svg_filename, out->layers.at("image")->dump());
-			return out;
+//			config->os_proxy().save_file(out->svg_filename, out->layers.at("image")->dump());
+			return std::make_unique<output>();
 		}
 
         std::pair<std::unique_ptr<svg::document>, cv::Mat> get_input(std::unique_ptr<input> in)

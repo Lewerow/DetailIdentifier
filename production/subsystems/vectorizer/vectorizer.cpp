@@ -49,16 +49,16 @@ namespace vectorizer
 			std::unique_ptr<output> out(std::make_unique<output>());
 
 			out->svg_filename = config->workspace_path() + "vectorized.svg";
-			if (!convert_to_svg(in->filename, out->svg_filename))
+			/*if (!convert_to_svg(in->filename, out->svg_filename))
 				throw std::runtime_error("Vectorization (conversion to svg) failed");
-
+				
 			out->dxf_filename = config->workspace_path() + "vectorized.dxf";
 			if (!convert_to_dxf(in->filename, out->dxf_filename))
 				throw std::runtime_error("Vectorization (conversion to dxf) failed");
-
+				
 			out->pgm_input_filename = config->workspace_path() + "vectorization_input.pgm";
 			config->os_proxy().copy(in->filename, out->pgm_input_filename);
-
+			*/
 			return out;
 		}
 
