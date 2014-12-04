@@ -23,6 +23,8 @@ namespace svg
     {
 	    return lhs.x == rhs.x && lhs.y == rhs.y;
     }
+	bool operator!=(const svg::location& lhs, const svg::location& rhs)
+	{
+		return ! (lhs == rhs);
+	}
 }
-
-

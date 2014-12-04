@@ -78,9 +78,7 @@ namespace
 		doc.add_point(p_end);
 
 		auto edge = std::make_shared<svg::segment>(doc.points().at(p_start.loc()), doc.points().at(p_end.loc()));
-		
-		doc.points().at(p_start.loc()).add_edge(edge);
-		doc.points().at(p_end.loc()).add_edge(edge->reverted());
+		doc.add_segment(p_start.loc(), p_end.loc());
 	}
 
 	typedef boost::char_separator<char> svg_separator;
@@ -147,14 +145,24 @@ namespace
 	std::vector<raw_path> straight_line(std::string serialized, const std::vector<raw_path>& history)
 	{
 		std::vector<svg::raw_coordinate> coordinates = fetch_params(serialized, 2, "Ll");
-		std::unique_ptr<svg::straight_line> line(std::make_unique<svg::straight_line>());
 
 		svg::location start_point = location_policy::get_starting_point(history);
-		line->endpoint_.x = coordinates[0] + start_point.x;
-		line->endpoint_.y = coordinates[1] + start_point.y;
-
 		std::vector<raw_path> res;
-		res.push_back(std::move(line));
+
+		auto start = std::make_unique<svg::path_starting_point>();
+		start->loc.x = start_point.x;
+		start->loc.y = start_point.y;
+		
+		res.push_back(std::move(start));
+		for (std::size_t i = 0; i < coordinates.size(); i += 2)
+		{
+			auto next_line = std::make_unique<svg::straight_line>();
+			next_line->endpoint_.x = coordinates[i] + res.back()->endpoint().x;
+			next_line->endpoint_.y = coordinates[i + 1] + res.back()->endpoint().y;
+			res.push_back(std::move(next_line));
+		}
+
+		res.erase(res.begin());
 		return res;
 	}
 
@@ -232,18 +240,7 @@ namespace
 					doc.add_point(svg::point(elem->endpoint()));
 
 				else
-				{
-					svg::point p(elem->endpoint());
-					if (doc.contains_point_at(elem->endpoint()))
-						doc.at(elem->endpoint()).add_edge(elem->make_edge(doc.at(elem->endpoint()), doc.at(previous_location)));
-					else
-					{
-						doc.add_point(p);
-						doc.at(p.loc()).add_edge(elem->make_edge(doc.at(elem->endpoint()), doc.at(previous_location)));
-					}
-
-					doc.at(previous_location).add_edge(elem->make_edge(doc.at(previous_location), doc.at(elem->endpoint())));
-				}
+					doc.add_segment(previous_location, elem->endpoint());
 
 				previous_location = elem->endpoint();
 			}

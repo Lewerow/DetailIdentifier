@@ -15,6 +15,7 @@ namespace svg
 		virtual point* end_point() const;
 		virtual double lenght() const;
 		virtual std::shared_ptr<edge> reverted() const;
+		void dump(pugi::xml_node* my_node) const;
 
 	private:
 		point& start;

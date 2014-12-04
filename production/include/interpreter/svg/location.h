@@ -17,6 +17,7 @@ namespace svg
 	};
 
     bool operator==(const svg::location& lhs, const svg::location& rhs);
+	bool operator!=(const svg::location& lhs, const svg::location& rhs);
 
 	double cartesian_distance(svg::location l1, svg::location l2);
 }

@@ -9,10 +9,10 @@
 
 namespace
 {
-	const double MIN_ACCEPTABLE_DISTANCE = 5;
-	const double MAX_ACCEPTABLE_DISTANCE = 50;
-	const double MIN_DISTANCE_BETWEEN_CLUSTERS = 15;
-	const std::size_t ATTEMPT_COUNT = 20;
+	const double MIN_ACCEPTABLE_DISTANCE = 10;
+	const double MAX_ACCEPTABLE_DISTANCE = 300;
+	const double MIN_DISTANCE_BETWEEN_CLUSTERS = 200;
+	const std::size_t ATTEMPT_COUNT = 3;
 
 	double waffles_distance(double* l1, double* l2)
 	{

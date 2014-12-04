@@ -3,6 +3,11 @@
 
 #include <memory>
 
+namespace pugi
+{
+	class xml_node;
+}
+
 namespace svg
 {
 	class point;
@@ -15,6 +20,7 @@ namespace svg
 		virtual point* end_point() const = 0;
 		virtual double lenght() const = 0;
 
+		virtual void dump(pugi::xml_node* my_node) const = 0;
 		virtual std::shared_ptr<edge> reverted() const = 0;
 	};
 }

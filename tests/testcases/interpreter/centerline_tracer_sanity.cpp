@@ -52,6 +52,7 @@ BOOST_FIXTURE_TEST_CASE(identifies_not_filled_rectangle_as_four_lines, advanced_
 	auto centerlines = tracer->trace_centerlines();
 
 	BOOST_CHECK_EQUAL(static_cast<std::size_t>(4), centerlines->points().size());
+	BOOST_CHECK_EQUAL(static_cast<std::size_t>(4), centerlines->edges().size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
