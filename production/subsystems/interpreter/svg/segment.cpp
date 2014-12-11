@@ -44,6 +44,6 @@ namespace svg
 		auto y2 = my_node->append_attribute("y2");
 		y2.set_value(end.loc().y);
 		auto style = my_node->append_attribute("style");
-		style.set_value("stroke:rgb(255,0,0);stroke-width=5");
+		style.set_value("stroke:rgb(255,0,0);stroke-width:5");
 	}
 }
