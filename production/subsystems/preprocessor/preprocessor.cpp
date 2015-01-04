@@ -1,5 +1,11 @@
 #include <preprocessor/preprocessor.h>
 #include <preprocessor/configuration.h>
+
+#include <executor/os_proxy.h>
+#include <executor/exceptions.h>
+
+#include <logger/logger.h>
+
 #include <string>
 
 #include <iostream>
@@ -13,11 +19,105 @@
 
 #include <interpreter/svg/document.h>
 
+#include <qgarlib/CleanedBinaryImage.h>
+#include <qgarlib/Dist34BlackCCImage.h>
+#include <qgarlib/DxfFile.h>
+#include <qgarlib/GenImage.h>
+#include <qgarlib/LabeledSkeletonImage.h>
+#include <qgarlib/LinkedChainList.h>
+#include <qgarlib/PbmFile.h>
+#include <qgarlib/PgmFile.h>
+#include <qgarlib/QgarApp.h>
+#include <qgarlib/RWSegmentVector.h>
+#include <qgarlib/ThresBinaryImage.h>
+
+
 namespace
 {
-	cv::Mat skeletize(cv::Mat& img)
+
+	namespace zhang_suen
 	{
-		cv::Mat out(img.size(), true);
+		// taken from: http://opencv-code.com/quick-tipst/implementation-of-thinning-algorithm-in-opencv/
+
+		/**
+		* Code for thinning a binary image using Zhang-Suen algorithm.
+		*/
+
+		/**
+		* Perform one thinning iteration.
+		* Normally you wouldn't call this function directly from your code.
+		*
+		* @param  im    Binary image with range = 0-1
+		* @param  iter  0=even, 1=odd
+		*/
+		void thinningIteration(cv::Mat& im, int iter)
+		{
+			cv::Mat marker = cv::Mat::zeros(im.size(), CV_8UC1);
+
+			for (int i = 1; i < im.rows - 1; i++)
+			{
+				for (int j = 1; j < im.cols - 1; j++)
+				{
+					uchar p2 = im.at<uchar>(i - 1, j);
+					uchar p3 = im.at<uchar>(i - 1, j + 1);
+					uchar p4 = im.at<uchar>(i, j + 1);
+					uchar p5 = im.at<uchar>(i + 1, j + 1);
+					uchar p6 = im.at<uchar>(i + 1, j);
+					uchar p7 = im.at<uchar>(i + 1, j - 1);
+					uchar p8 = im.at<uchar>(i, j - 1);
+					uchar p9 = im.at<uchar>(i - 1, j - 1);
+
+					int A = (p2 == 0 && p3 == 1) + (p3 == 0 && p4 == 1) +
+						(p4 == 0 && p5 == 1) + (p5 == 0 && p6 == 1) +
+						(p6 == 0 && p7 == 1) + (p7 == 0 && p8 == 1) +
+						(p8 == 0 && p9 == 1) + (p9 == 0 && p2 == 1);
+					int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+					int m1 = iter == 0 ? (p2 * p4 * p6) : (p2 * p4 * p8);
+					int m2 = iter == 0 ? (p4 * p6 * p8) : (p2 * p6 * p8);
+
+					if (A == 1 && (B >= 2 && B <= 6) && m1 == 0 && m2 == 0)
+						marker.at<uchar>(i, j) = 1;
+				}
+			}
+
+			im &= ~marker;
+		}
+
+		/**
+		* Function for thinning the given binary image
+		*
+		* @param  im  Binary image with range = 0-255
+		*/
+		void thinning(cv::Mat& im)
+		{
+			im /= 255;
+
+			cv::Mat prev = cv::Mat::zeros(im.size(), CV_8UC1);
+			cv::Mat diff;
+
+			do {
+				thinningIteration(im, 0);
+				thinningIteration(im, 1);
+				cv::absdiff(im, prev, diff);
+				im.copyTo(prev);
+			} while (cv::countNonZero(diff) > 0);
+
+			im *= 255;
+		}
+	}
+
+	cv::Mat skeletize_zhang_suen(cv::Mat& img)
+	{
+		cv::Mat out(img.size(), true, CV_8UC1);
+		cv::threshold(img, out, 127, 255, cv::THRESH_BINARY);
+		cv::bitwise_not(out, out);
+		zhang_suen::thinning(out);
+		return out;
+	}
+
+	cv::Mat skeletize_simple(cv::Mat& img)
+	{
+		cv::Mat out(img.size(), true, CV_8UC1);
 		cv::threshold(img, img, 127, 255, cv::THRESH_BINARY);
 		cv::bitwise_not(img, img);
 		
@@ -45,146 +145,24 @@ namespace
 		return skeleton;
 	}
 
-	uchar get(const cv::Mat& original, int x, int y)
+	cv::Mat pick_wide_lines(const std::string& path)
 	{
-		return original.at<uchar>(y, x);
-	}
-	
-	struct location_iterator
-	{
-		location_iterator(svg::location start, double x_step, double y_step, double x_max, double y_max) : start_(start), x_step_(x_step), y_step_(y_step), x_max_(x_max), y_max_(y_max), step_(-10000)
-		{}
+		int thin_line_width = 15;
 
-		svg::location next()
-		{
-			++step_;
-			return svg::location(start_.x + step_ * x_step_, start_.y + step_ * y_step_);
-		}
+		cv::Mat img = cv::imread(path, CV_LOAD_IMAGE_ANYDEPTH);
+		cv::medianBlur(img, img, 5);
+		cv::threshold(img, img, 127, 255, cv::THRESH_BINARY);
 
-		bool end()
-		{
-//			double current_x = start_.x + step_ * x_step_;
-//			double current_y = start_.y + step_ * y_step_;
-//			bool res = current_x > x_max_ || current_x < -0.5 || current_y > y_max_ || current_y < -0.5;
-			return step_ > 10000;
-		}
+		cv::morphologyEx(img, img, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(thin_line_width, thin_line_width)));
+		cv::dilate(img, img, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(thin_line_width, thin_line_width)));
+		cv::erode(img, img, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(thin_line_width, thin_line_width)));
 
-		svg::location start_;
-		double x_step_;
-		double y_step_;
-		double x_max_;
-		double y_max_;
-		int step_;
-	};
-
-	std::vector<std::pair<svg::location, svg::location> > validate_any_lines(svg::location start, double x_step, double y_step, const cv::Mat& original)
-	{
-		const double min_line_lenght = 25; // 25 px/mm --> shortest line is 1 mm
-		const double min_distance_between_lines = 8;
-
-		std::vector<std::pair<svg::location, svg::location> > lines;
-		std::pair<svg::location, svg::location> next_line;
-		bool line_started = false;
-		int empty_between = 0;
-		int filled_between = 0;
-		svg::location current_location(start);
-		
-		for (location_iterator it(start, x_step, y_step, original.cols, original.rows); !it.end(); current_location = it.next())
-		{
-			if (current_location.x < 0 || current_location.y < 0 || current_location.x >= original.cols || current_location.y >= original.rows)
-				continue;
-
-			if (get(original, current_location.x, current_location.y) > 0)
-			{
-				++filled_between;
-				if (!line_started)
-				{
-					line_started = true;
-					next_line.first = current_location;
-				}
-				else
-				{
-					filled_between += empty_between;
-					empty_between = 0;
-				}
-			}
-			else
-			{
-				++empty_between;
-				if (empty_between > min_distance_between_lines && line_started)
-				{
-					line_started = false;
-
-					if (filled_between > min_line_lenght)
-					{
-						next_line.second = svg::location(current_location.x, current_location.y - empty_between);
-						lines.push_back(next_line);
-					}
-					filled_between = 0;
-				}
-			}
-		}
-
-		return lines;
-	}
-
-	struct boundaries
-	{
-		boundaries(int up, int down) : up_(up), down_(down)
-		{}
-
-		bool fit(double d)
-		{
-			return d >= down_ && d <= up_;
-		}
-		int up_;
-		int down_;
-	};
-
-	std::vector<std::pair<svg::location, svg::location> > validate_lines(float rho, float theta, const cv::Mat& original)
-	{
-		double a = cv::cos(theta);
-		double b = cv::sin(theta);
-		double x_step = a;
-		double y_step = b;
-
-		svg::location start = svg::location(rho * a, rho * b);/*
-		if (a >= 0 && b <= 0) // IV quarter
-		{
-			start.x -= a * start.y;
-			start.y = 0;
-			y_step = -y_step;
-		}
-		else if (a <= 0 && b >= 0) // II quarter
-		{
-			start.y -= b * start.x; 
-			start.x = 0;
-			x_step = -x_step;
-		}
-		else // I quarter -> III is impossible
-		{
-			boundaries x(0, original.cols);
-
-			start.x -= a * start.y;
-			start.y = 0;
-			x_step = -x_step;
-			y_step = -y_step;
-			
-			if (!x.fit(start.x))
-			{
-				start.y -= b * (x.up_ - start.x);
-				start.x = x.up_;
-				x_step = -x_step;
-				y_step = -y_step;
-			}
-		}
-		*/
-//		return validate_any_lines(start, -y_step, x_step, original);
-
-		return{ { svg::location(start.x + 1000 * (-b), start.y + 1000 * a), svg::location(start.x - 1000 * (-b), start.y - 1000 * a) }};
+		return img;
 	}
 }
 
+using namespace qgar;
+using namespace std;
 namespace preprocessor
 {
 	class preprocessor::impl
@@ -195,42 +173,44 @@ namespace preprocessor
 
 		std::unique_ptr<output> preprocess(std::unique_ptr<input> in)
 		{
-			cv::Mat img = cv::imread(config->input_filename());
-			cv::Mat greyscale;
-			cv::cvtColor(img, greyscale, CV_RGB2GRAY);
+			cv::Mat greyscale = cv::imread(config->input_filename(), CV_LOAD_IMAGE_GRAYSCALE);
 
-			cv::GaussianBlur(greyscale, greyscale, cv::Size(7, 7), 5);
-			cv::imwrite(config->workspace_path() + "smooth.pgm", greyscale);
+			cv::medianBlur(greyscale, greyscale, 9);
+			std::string workspace = config->workspace_path();
 
-			auto skeleton = skeletize(greyscale);
-			cv::imwrite(config->workspace_path() + "skeleton.pgm", skeleton);
+			cv::imwrite(workspace + "smooth.pgm", greyscale);
 
-			cv::vector<cv::Vec2f> hough_lines;
-			cv::HoughLines(skeleton, hough_lines, 1, CV_PI / 180, 170, 0);
-
-
-		    svg::document svg_doc(img.cols, img.rows);
-			for (auto& p : hough_lines)
 			{
-				auto lines = validate_lines(p[0], p[1], greyscale);
-
-				for (auto line : lines)
-				{
-					svg_doc.add_segment(line.first, line.second);
-					std::cout << "from: (" << line.first.x << "," << line.first.y << ") to (" << line.second.x << "," << line.second.y << ")" << std::endl;
-				}
-
-//    				std::cout << "coords: ( a = " << cv::cos(p[1]) << ", b = " << cv::sin(p[1]) << " offset: " << p[0] << std::endl;
+				// because OpenCV sucks at saving pbm
+				// or I suck at OpenCV...
+				qgar::PgmFile pgm((workspace + "smooth.pgm").c_str());
+				qgar::PbmFile pbm((workspace + "smooth.pbm").c_str());
+				pbm.write(qgar::ThresBinaryImage(pgm.read(), 170));
 			}
-				
-//			cv::imwrite(config->workspace_path() + "skeleton_hough.pgm", hough);
-			
-			std::ofstream str(config->workspace_path() + "vectors.svg");
-			str << svg_doc.dump();
-			str.flush();
+
+			try
+			{
+			executor::os_proxy().call("QAtextGraphicSeparation.exe", { "-in", workspace + "smooth.pbm", "-outxt", workspace + "text.pbm", "-outg",
+				workspace + "graphics.pbm", "-outu", workspace + "unknown.pbm", "-area", "10", "-elbbox", "100", "-elmaer", "2", "-dmaer", ".5" });
+			}
+
+			catch (executor::system_call_failure c)
+			{
+				config->log().error_log(std::string("System call failure: ") + c.what() + "\nContinuing, but expect crashes");
+			}
+
+			auto skeleton = skeletize_zhang_suen(greyscale);
+			cv::imwrite(config->workspace_path() + "whole_skeleton.pgm", skeleton);
+
+			auto wide_lines = pick_wide_lines(workspace + "graphics.pbm");
+			cv::imwrite(config->workspace_path() + "wide_lines_only.pgm", wide_lines);
+
+			auto wide_skeleton = skeletize_zhang_suen(wide_lines);
+			cv::imwrite(config->workspace_path() + "wide_lines_only_skeleton.pgm", wide_skeleton);
 
 			std::unique_ptr<output> out(std::make_unique<output>());
-			out->filename = config->workspace_path() + "preprocessed.pgm";
+			out->wide_lines_filename = config->workspace_path() + "wide_lines_only_skeleton.pgm";
+			out->original_filename = config->workspace_path() + "smooth.pgm";
 			return out;
 		}
 

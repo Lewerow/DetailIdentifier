@@ -11,7 +11,8 @@ namespace preprocessor
 	class output
 	{
 	public:
-		std::string filename;
+		std::string wide_lines_filename;
+		std::string original_filename;
 	};
 }
 

@@ -13,6 +13,7 @@
 #include <logger/command_line_logger.h>
 
 #include <numeric>
+#include <iostream>
 
 namespace
 {
