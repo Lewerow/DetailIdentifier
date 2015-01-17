@@ -7,6 +7,8 @@
 
 #include <interpreter/svg/document.h>
 
+#include <opencv2/core/core.hpp>
+
 namespace interpreter
 {
 	typedef vectorizer::output input;
@@ -14,10 +16,10 @@ namespace interpreter
 	class output
 	{
 	public:
-		std::string svg_filename;
-		std::string dxf_filename;
+		cv::Mat skeleton_image;
 
-		std::map<std::string, std::unique_ptr<svg::document> > layers;
+		std::vector<cv::Point2i> vertices;
+		std::vector<std::pair<std::size_t, std::size_t> > edges;
 	};
 }
 

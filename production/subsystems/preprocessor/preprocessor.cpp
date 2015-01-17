@@ -112,6 +112,7 @@ namespace
 		cv::threshold(img, out, 127, 255, cv::THRESH_BINARY);
 		cv::bitwise_not(out, out);
 		zhang_suen::thinning(out);
+		cv::bitwise_not(out, out);
 		return out;
 	}
 

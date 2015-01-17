@@ -4,6 +4,8 @@
 #include <common/preprocessor_interface_types.h>
 #include <string>
 
+#include <opencv2/core/core.hpp>
+
 namespace vectorizer
 {
 	typedef preprocessor::output input;
@@ -11,9 +13,10 @@ namespace vectorizer
 	class output
 	{
 	public:
-		std::string pgm_input_filename;
-		std::string svg_filename;
-		std::string dxf_filename;
+		cv::Mat skeleton_image;
+
+		std::vector<cv::Point2i> vertices;
+		std::vector<std::pair<std::size_t, std::size_t> > edges;
 	};
 }
 
