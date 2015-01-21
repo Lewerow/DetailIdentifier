@@ -13,7 +13,11 @@ namespace modeller
 		modeller(std::shared_ptr<configuration>);
 		virtual ~modeller();
 
+		void draw_cast_lines(const input& in);
 		virtual std::unique_ptr<output> generate_model(std::unique_ptr<input> in);
+
+	private:
+		std::shared_ptr<configuration> cfg;
 	};
 }
 

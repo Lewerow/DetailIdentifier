@@ -6,6 +6,7 @@
 #include <common/vectorizer_interface_types.h>
 
 #include <interpreter/svg/document.h>
+#include <interpreter/projection.h>
 
 #include <opencv2/core/core.hpp>
 
@@ -18,8 +19,10 @@ namespace interpreter
 	public:
 		cv::Mat skeleton_image;
 
-		std::vector<cv::Point2i> vertices;
-		std::vector<std::pair<std::size_t, std::size_t> > edges;
+		std::vector<std::vector<projection_direction> > projection_directions;
+		std::size_t main_projection;
+
+		std::vector<projection> projections;
 	};
 }
 

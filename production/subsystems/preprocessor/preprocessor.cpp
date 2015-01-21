@@ -148,7 +148,7 @@ namespace
 
 	cv::Mat pick_wide_lines(const std::string& path)
 	{
-		int thin_line_width = 15;
+		int thin_line_width = 9;
 
 		cv::Mat img = cv::imread(path, CV_LOAD_IMAGE_ANYDEPTH);
 		cv::medianBlur(img, img, 5);

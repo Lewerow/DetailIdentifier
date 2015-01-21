@@ -130,7 +130,7 @@ namespace vectorizer
 
 			int START_SEED = 255;
 			cv::Mat minimal(img.size(), CV_32SC1, cv::Scalar(START_SEED));
-			int SEED_RADIUS = 15;
+			int SEED_RADIUS = 30;
 			for (std::size_t i = 0; i < vertices.size(); ++i)
 			{
 				if (vertices[i].size() == 2)
