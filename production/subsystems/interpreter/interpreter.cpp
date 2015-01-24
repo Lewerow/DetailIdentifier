@@ -38,6 +38,8 @@ namespace
 			next_projection.insert(e.second);
 
 			interpreter::projection c;
+			c.edges.push_back(std::make_pair(vertices[e.first], vertices[e.second]));
+
 			bool no_change = false;
 			while (!no_change)
 			{
@@ -78,6 +80,7 @@ namespace
 		std::size_t previous_size = target.vertices.size();
 		target.vertices.insert(target.vertices.end(), src.vertices.begin(), src.vertices.end());
 
+		std::cout << "Merging: " << src.edges.size() << " edges" << std::endl;
 		for (std::size_t k = 0; k < src.edges.size(); ++k)
 		{
 			target.edges.push_back(src.edges[k]);
@@ -187,7 +190,7 @@ namespace
 
 				std::cout << "Projection direction between: " << i << " and " << j << ": " << "Ang: " << directions[i][j].alpha << ", P: " << directions[i][j].p << std::endl;
 
-				cv::line(common, far_behind(projections[i].bounding_box.center, directions[i][j]), far_before(projections[j].bounding_box.center, directions[i][j]), 255, 2);
+				cv::line(common, far_behind(projections[i].bounding_box.center, directions[i][j]), far_before(projections[i].bounding_box.center, directions[i][j]), 255);
 			}
 		}
 
@@ -242,7 +245,7 @@ namespace
 
 		projections[main_projection].s.y_line = directions[0][1];
 		projections[main_projection].s.y_line.p -= 10000;
-		projections[main_projection].s.x_line = { projections[main_projection].s.y_line.alpha + CV_PI / 2, -10000 };
+		projections[main_projection].s.x_line = { projections[main_projection].s.y_line.alpha - CV_PI / 2, -10000 };
 		projections[main_projection].s.z_line = { 0, 0 };
 
 		std::cout << "Projection: " << main_projection << " zero point: " << projections[main_projection].s.zero_point_image_location << std::endl;
@@ -276,7 +279,7 @@ namespace
 			projections[k].s.x_line = { 0, 0 };
 			projections[k].s.y_line = directions[0][1];
 			projections[k].s.y_line.p -= 10000;
-			projections[k].s.z_line = { projections[main_projection].s.y_line.alpha + CV_PI / 2, -10000 };
+			projections[k].s.z_line = projections[main_projection].s.x_line;
 
 			std::cout << "Projection: " << k << " zero point: " << projections[k].vertices[min] << std::endl;
 //			std::cout << "Proof: " << projections[k].s.get_location_of(projections[k].vertices[min]) << std::endl;
@@ -297,7 +300,7 @@ namespace interpreter
 			cv::vector<projection> potential_projections = separate_projections(in->vertices,  in->edges);
 
 			for (auto& c : potential_projections)
-				c.bounding_box = cv::minAreaRect(c.vertices);	
+				c.bounding_box = cv::minAreaRect(c.vertices);
 
 			prune(potential_projections);
 
@@ -308,11 +311,11 @@ namespace interpreter
 				cv::Point2f rect_points[4];
 				potential_projections[i].bounding_box.points(rect_points);
 				for (int j = 0; j < 4; j++)
-					cv::line(with_box, rect_points[j], rect_points[(j + 1) % 4], 255);
+					cv::line(with_box, rect_points[j], rect_points[(j+1)%4], 255);
 
 				for (auto e : potential_projections[i].edges)
 					cv::line(with_box, e.first, e.second, 255);
-
+					
 				cv::bitwise_or(common, with_box, common);
 				cv::imwrite(config->workspace_path() + "with_boxes_projection_" + boost::lexical_cast<std::string>(i)+".pgm", with_box);
 			}

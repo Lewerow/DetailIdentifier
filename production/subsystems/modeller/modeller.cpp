@@ -14,6 +14,7 @@
 
 const int MAX_DIFF = 70;
 
+
 namespace
 {
 	std::ostream& operator<<(std::ostream& str, cv::Point3d p)
@@ -42,8 +43,15 @@ namespace
 			viz.showWidget("point" + boost::lexical_cast<std::string>(++x), ball);
 		}
 
+		std::map<std::size_t, std::set<std::size_t> > edges;
 		for (std::size_t i = 0; i < model.edges.size(); ++i)
 		{
+			if (edges[model.edges[i].first].count(model.edges[i].second) != 0)
+				continue;
+
+			edges[model.edges[i].first].insert(model.edges[i].second);
+			edges[model.edges[i].second].insert(model.edges[i].first);
+
 			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;
 			auto line = cv::viz::WLine(model.points[model.edges[i].first], model.points[model.edges[i].second], cv::viz::Color::red());
 			viz.showWidget("line" + boost::lexical_cast<std::string>(++x), line);
@@ -128,7 +136,7 @@ namespace
 
 				bool result = (x && y) || (x && z) || (z && y);
 				std::cout << "Analyzing: " << ref[g] << " vs " << ref[s] << " verdict: " << result << std::endl;
-				if(result)
+				if (result)
 					accepted.push_back(s);
 			}
 		}
@@ -154,15 +162,16 @@ namespace
 					for (std::size_t l = 0; l < in.projections[k].vertices.size(); ++l)
 					{
 						auto dist = calculate_distance(in.projections[i].vertices[j], in.projection_directions[i][k], in.projections[k].vertices[l]);
-//						std::cout << "Between: " << in.projections[i].vertices[j] << "and" << in.projections[k].vertices[l] << " distance: " << dist << " parallel: " << in.projection_directions[i][k].alpha << std::endl;
 						if (dist < MAX_DIFF)
 						{
-							mod.points.push_back(coords_point(in.projections[i], j, in.projections[k], l));
+							std::cout << "Between: " << in.projections[i].vertices[j] << "and" << in.projections[k].vertices[l] << " distance: " << dist << " parallel: " << in.projection_directions[i][k].alpha << std::endl;
+							cv::Point3d p = coords_point(in.projections[i], j, in.projections[k], l);
+							mod.points.push_back(p);
 							
 							projection_point_points[i][j].insert(mod.points.size() - 1);
 							projection_point_points[k][l].insert(mod.points.size() - 1);
 				
-							std::cout << "Added to model: " << coords_point(in.projections[i], j, in.projections[k], l) << std::endl;
+							std::cout << "Added to model: " << p << std::endl;
 						}
 					}
 				}
@@ -186,7 +195,14 @@ namespace
 					{
 						std::cout << "Accepted additional edge with: " << e.first << std::endl;
 						auto x(filter_needed(pr.second[e.first], pt.second, mod.points));
-						v.insert(v.begin(), x.begin(), x.end());
+						v.insert(v.end(), x.begin(), x.end());
+					}
+
+					if (e.first == pt.first)
+					{
+						std::cout << "Accepted additional edge with: " << e.second << std::endl;
+						auto x(filter_needed(pr.second[e.second], pt.second, mod.points));
+						v.insert(v.end(), x.begin(), x.end());
 					}
 				}
 
