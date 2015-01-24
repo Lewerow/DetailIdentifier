@@ -144,10 +144,20 @@ namespace
 		return accepted;//std::vector<std::size_t>(possible.begin(), possible.end());
 	}
 
+	struct parents
+	{
+		std::size_t proj1;
+		std::size_t pt1;
+
+		std::size_t proj2;
+		std::size_t pt2;
+	};
+
 	model3d build_model(modeller::input& in)
 	{
 		model3d mod;
-		std::map<std::size_t, std::map<std::size_t, std::set<std::size_t> > > projection_point_points;
+
+		std::map < std::size_t, parents > points_parents;
 		
 		std::cout << "Starting to build 3D model. Using " << in.projections.size() << " projections" << std::endl;
 		for (std::size_t i = 0; i < in.projections.size(); ++i)
@@ -167,10 +177,8 @@ namespace
 							std::cout << "Between: " << in.projections[i].vertices[j] << "and" << in.projections[k].vertices[l] << " distance: " << dist << " parallel: " << in.projection_directions[i][k].alpha << std::endl;
 							cv::Point3d p = coords_point(in.projections[i], j, in.projections[k], l);
 							mod.points.push_back(p);
-							
-							projection_point_points[i][j].insert(mod.points.size() - 1);
-							projection_point_points[k][l].insert(mod.points.size() - 1);
-				
+
+							points_parents[mod.points.size() - 1] = parents{ i, j, k, l };
 							std::cout << "Added to model: " << p << std::endl;
 						}
 					}
@@ -179,43 +187,54 @@ namespace
 		}
 
 		std::cout << "Searching for edges" << std::endl;
-		std::cout << "Number of analyzed projections: " << projection_point_points.size() << std::endl;
-		for (auto& pr: projection_point_points)
+		std::cout << "Found: " << points_parents.size() << " points" << std::endl;
+
+		for (auto it = points_parents.begin(); it != points_parents.end(); ++it)
 		{
-			std::cout << "Number of analyzed points: " << pr.second.size() << std::endl;
-			for (auto& pt : pr.second)
+			const auto& first_edges = in.projections[it->second.proj1].cedges;
+			
+			auto it2 = it;
+			for (++it2; it2 != points_parents.end(); ++it2)
 			{
-				std::cout << "Number of analyzed existing derivatives: " << pt.second.size() << std::endl;
-				std::vector<std::size_t> v(pt.second.begin(), pt.second.end());
+				std::vector<std::pair<std::size_t, std::size_t> > second_edges;
+				std::size_t first_first;
+				std::size_t first_second;
+				std::size_t second_first;
+				std::size_t second_second;
 
-				std::cout << "Total additional edges: " << in.projections[pr.first].cedges.size() << std::endl;
-				for (auto e : in.projections[pr.first].cedges)
+				if (it2->second.proj1 == it->second.proj1)
 				{
-					if (e.second == pt.first)
-					{
-						std::cout << "Accepted additional edge with: " << e.first << std::endl;
-						auto x(filter_needed(pr.second[e.first], pt.second, mod.points));
-						v.insert(v.end(), x.begin(), x.end());
-					}
-
-					if (e.first == pt.first)
-					{
-						std::cout << "Accepted additional edge with: " << e.second << std::endl;
-						auto x(filter_needed(pr.second[e.second], pt.second, mod.points));
-						v.insert(v.end(), x.begin(), x.end());
-					}
+					second_edges = in.projections[it2->second.proj2].cedges;
+					first_first = it->second.pt1;
+					first_second = it2->second.pt1;
+					second_first = it->second.pt2;
+					second_second = it2->second.pt2;
 				}
 
-				for (std::size_t i = 0; i < v.size(); ++i)
+				else if (it2->second.proj1 == it->second.proj2)
 				{
-					for (std::size_t j = i + 1; j < v.size(); ++j)
-					{
-						mod.edges.push_back(std::make_pair(v[i], v[j]));
-					}
+					second_edges = in.projections[it2->second.proj1].cedges;
+					first_first = it->second.pt1;
+					first_second = it2->second.pt2;
+					second_first = it->second.pt2;
+					second_second = it2->second.pt1;
 				}
+					
+				else
+					continue;
+
+
+				bool connected_on_first = it->second.pt1 == it2->second.pt1 || std::find(first_edges.begin(), first_edges.end(), std::make_pair(first_first, first_second)) != first_edges.end() ||
+					std::find(first_edges.begin(), first_edges.end(), std::make_pair(first_second, first_first)) != first_edges.end();
+
+				bool connected_on_second = it->second.pt2 == it2->second.pt2 || std::find(first_edges.begin(), first_edges.end(), std::make_pair(second_first, second_second)) != first_edges.end() ||
+					std::find(first_edges.begin(), first_edges.end(), std::make_pair(second_second, second_first)) != first_edges.end();
+
+				if (connected_on_first && connected_on_second)
+					mod.edges.push_back(std::make_pair(it->first, it2->first));
 			}
 		}
-		
+				
 		std::cout << "Edges found, displaying" << std::endl;
 		return mod;
 	}
