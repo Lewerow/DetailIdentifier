@@ -5,6 +5,16 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/viz/viz3d.hpp>
 
+#include <vtkSTLWriter.h>
+#include <vtkSTLReader.h>
+#include <vtkSphereSource.h>
+#include <vtkSmartPointer.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindowInteractor.h>
+
 #include <boost/lexical_cast.hpp>
 
 #include <map>
@@ -29,20 +39,49 @@ namespace
 		std::vector<std::pair<cv::Point3d, cv::Point3d> > pedges;
 	};
 
-	void load(cv::viz::Viz3d& viz, const model3d& model)
+	void load(const model3d& model, std::string target)
 	{
+		aiMesh* vertices = new aiMesh;
 		std::cout << "Displaying model" << std::endl;
 
 		static int x = 0;
+
+		vertices->mNumVertices = model.points.size();
+		vertices->mVertices = new aiVector3D[model.points.size()];
 		for (std::size_t i = 0; i < model.points.size(); ++i)
 		{
-			std::cout << "Adding to model point: " << model.points[i]<< std::endl;
+			std::cout << "Adding to model point: " << model.points[i] << std::endl;
+			vertices->mVertices[i] = aiVector3D( model.points[i].x, model.points[i].y, model.points[i].z );
 
-			std::vector<cv::viz::Color> c({ cv::viz::Color::amethyst(), cv::viz::Color::yellow(), cv::viz::Color::gray(), cv::viz::Color::cherry(), cv::viz::Color::apricot() });
-			auto ball = cv::viz::WSphere(model.points[i], 30, 15, c[x % c.size()]);
-			viz.showWidget("point" + boost::lexical_cast<std::string>(++x), ball);
+//			std::vector<cv::viz::Color> c({ cv::viz::Color::amethyst(), cv::viz::Color::yellow(), cv::viz::Color::gray(), cv::viz::Color::cherry(), cv::viz::Color::apricot() });
+
+//			auto ball = cv::viz::WSphere(model.points[i], 30, 15, c[x % c.size()]);
+
+//			
+			//.showWidget("point" + boost::lexical_cast<std::string>(++x), ball);
 		}
 
+		aiScene* scene = new aiScene;
+
+		aiNode* node = new aiNode;
+		node->mName.Set("3D Model");
+		
+		aiNode* n2 = new aiNode;
+		n2->mName.Set("Real");
+		n2->mParent = node;
+		node->mNumChildren = 1;
+		node->mChildren = new aiNode*[1];
+		node->mChildren[0] = n2;
+
+		n2->mMeshes = new unsigned int[1];
+		n2->mMeshes[0] = 0;
+
+		scene->mNumMeshes = 1;
+		scene->mMeshes = new aiMesh*[1];
+		scene->mMeshes[0] = vertices;
+
+		scene->mRootNode = node;
+		/*
 		std::map<std::size_t, std::set<std::size_t> > edges;
 		for (std::size_t i = 0; i < model.edges.size(); ++i)
 		{
@@ -54,8 +93,15 @@ namespace
 
 			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;
 			auto line = cv::viz::WLine(model.points[model.edges[i].first], model.points[model.edges[i].second], cv::viz::Color::red());
-			viz.showWidget("line" + boost::lexical_cast<std::string>(++x), line);
-		}
+			.showWidget("line" + boost::lexical_cast<std::string>(++x), line);
+		}*/
+
+		scene->mNumMaterials = 1;
+		scene->mMaterials = new aiMaterial*[1];
+		scene->mMaterials[0] = new aiMaterial;
+
+		Assimp::Exporter ex;
+		ex.Export(scene, "obj", target);
 	}
 
 	double calculate_distance(cv::Point2d center, interpreter::projection_direction parallel, cv::Point2d target)
@@ -290,10 +336,7 @@ namespace modeller
 		draw_cast_lines(*in);
 		model3d model = build_model(*in);
 
-		cv::viz::Viz3d viz("3D Model");
-		load(viz, model);
-		viz.spin();
-		viz.saveScreenshot(cfg->workspace_path() + "screenshot_3D.png");
+		load(model, cfg->output_filename());
 		
 		return std::make_unique<output>();
 	}
