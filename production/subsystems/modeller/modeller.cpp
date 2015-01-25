@@ -5,7 +5,13 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/viz/viz3d.hpp>
 
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkRenderingOpenGL);
+
+#include <vtkImageData.h>
 #include <vtkSTLWriter.h>
+#include <vtkPLYWriter.h>
+#include <vtkPLYReader.h>
 #include <vtkSTLReader.h>
 #include <vtkSphereSource.h>
 #include <vtkSmartPointer.h>
@@ -14,6 +20,14 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkAppendFilter.h>
+#include <vtkAppendPolyData.h>
+#include <vtkLine.h>
+#include <vtkLineSource.h>
+#include <vtkProperty.h>
+#include <vtkActor.h>
+#include <vtkVoxelModeller.h>
+#include <vtkMarchingCubes.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -41,47 +55,26 @@ namespace
 
 	void load(const model3d& model, std::string target)
 	{
-		aiMesh* vertices = new aiMesh;
 		std::cout << "Displaying model" << std::endl;
 
 		static int x = 0;
+		
+		vtkSmartPointer<vtkPLYWriter> stlWriter = vtkSmartPointer<vtkPLYWriter>::New();
+		vtkSmartPointer<vtkAppendPolyData> data = vtkSmartPointer<vtkAppendPolyData>::New();
 
-		vertices->mNumVertices = model.points.size();
-		vertices->mVertices = new aiVector3D[model.points.size()];
+		std::cout << "Saving to file: " << target << std::endl;
+		stlWriter->SetFileName(target.c_str());
+		/*
 		for (std::size_t i = 0; i < model.points.size(); ++i)
 		{
 			std::cout << "Adding to model point: " << model.points[i] << std::endl;
-			vertices->mVertices[i] = aiVector3D( model.points[i].x, model.points[i].y, model.points[i].z );
+			vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
+			sphereSource->SetCenter(model.points[i].x, model.points[i].y, model.points[i].z);
+			sphereSource->SetRadius(30);
+			sphereSource->Update();
+			data->AddInputData(sphereSource->GetOutput());
+		}*/
 
-//			std::vector<cv::viz::Color> c({ cv::viz::Color::amethyst(), cv::viz::Color::yellow(), cv::viz::Color::gray(), cv::viz::Color::cherry(), cv::viz::Color::apricot() });
-
-//			auto ball = cv::viz::WSphere(model.points[i], 30, 15, c[x % c.size()]);
-
-//			
-			//.showWidget("point" + boost::lexical_cast<std::string>(++x), ball);
-		}
-
-		aiScene* scene = new aiScene;
-
-		aiNode* node = new aiNode;
-		node->mName.Set("3D Model");
-		
-		aiNode* n2 = new aiNode;
-		n2->mName.Set("Real");
-		n2->mParent = node;
-		node->mNumChildren = 1;
-		node->mChildren = new aiNode*[1];
-		node->mChildren[0] = n2;
-
-		n2->mMeshes = new unsigned int[1];
-		n2->mMeshes[0] = 0;
-
-		scene->mNumMeshes = 1;
-		scene->mMeshes = new aiMesh*[1];
-		scene->mMeshes[0] = vertices;
-
-		scene->mRootNode = node;
-		/*
 		std::map<std::size_t, std::set<std::size_t> > edges;
 		for (std::size_t i = 0; i < model.edges.size(); ++i)
 		{
@@ -91,17 +84,68 @@ namespace
 			edges[model.edges[i].first].insert(model.edges[i].second);
 			edges[model.edges[i].second].insert(model.edges[i].first);
 
-			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;
-			auto line = cv::viz::WLine(model.points[model.edges[i].first], model.points[model.edges[i].second], cv::viz::Color::red());
-			.showWidget("line" + boost::lexical_cast<std::string>(++x), line);
-		}*/
+			vtkSmartPointer<vtkLineSource> line = vtkSmartPointer<vtkLineSource>::New();
+			line->SetPoint1(model.points[model.edges[i].first].x, model.points[model.edges[i].first].y, model.points[model.edges[i].first].z);
+			line->SetPoint2(model.points[model.edges[i].second].x, model.points[model.edges[i].second].y, model.points[model.edges[i].second].z);
+			line->Update();
+			
+			data->AddInputData(line->GetOutput());
 
-		scene->mNumMaterials = 1;
-		scene->mMaterials = new aiMaterial*[1];
-		scene->mMaterials[0] = new aiMaterial;
+			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;		
+		}
 
-		Assimp::Exporter ex;
-		ex.Export(scene, "obj", target);
+		double bounds[6];
+		data->GetOutput()->GetBounds(bounds);
+		for (unsigned int i = 0; i < 6; i += 2)
+		{
+			double range = bounds[i + 1] - bounds[i];
+			bounds[i] = bounds[i] - .1 * range;
+			bounds[i + 1] = bounds[i + 1] + .1 * range;
+		}
+
+		vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
+		double isoValue;
+		vtkSmartPointer<vtkVoxelModeller> voxelModeller = vtkSmartPointer<vtkVoxelModeller>::New();
+		voxelModeller->SetSampleDimensions(50, 50, 50);
+		voxelModeller->SetModelBounds(bounds);
+		voxelModeller->SetScalarTypeToFloat();
+		voxelModeller->SetMaximumDistance(.1);
+		voxelModeller->SetInputConnection(data->GetOutputPort());
+		voxelModeller->Update();
+		isoValue = 0.5;
+		volume->DeepCopy(voxelModeller->GetOutput());
+
+		vtkSmartPointer<vtkMarchingCubes> surface =	vtkSmartPointer<vtkMarchingCubes>::New();
+		surface->SetInputData(volume);
+		surface->ComputeNormalsOn();
+		surface->SetValue(0, isoValue);
+
+		stlWriter->AddInputConnection(surface->GetOutputPort());
+		stlWriter->Write();
+
+		// Read and display for verification
+		vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
+		reader->SetFileName(target.c_str());
+		reader->Update();
+
+		vtkSmartPointer<vtkPolyDataMapper> mapper =	vtkSmartPointer<vtkPolyDataMapper>::New();
+		mapper->SetInputConnection(reader->GetOutputPort());
+
+		vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+		actor->SetMapper(mapper);
+		actor->GetProperty()->SetLineWidth(100);
+
+		vtkSmartPointer<vtkRenderer> renderer =	vtkSmartPointer<vtkRenderer>::New();
+		vtkSmartPointer<vtkRenderWindow> renderWindow =	vtkSmartPointer<vtkRenderWindow>::New();
+		renderWindow->AddRenderer(renderer);
+		vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =	vtkSmartPointer<vtkRenderWindowInteractor>::New();
+		renderWindowInteractor->SetRenderWindow(renderWindow);
+
+		renderer->AddActor(actor);
+		renderer->SetBackground(0, 0, 0);
+
+		renderWindow->Render();
+		renderWindowInteractor->Start();
 	}
 
 	double calculate_distance(cv::Point2d center, interpreter::projection_direction parallel, cv::Point2d target)
