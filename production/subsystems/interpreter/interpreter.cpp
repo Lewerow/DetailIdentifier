@@ -325,6 +325,18 @@ namespace interpreter
 
 			assign_coordinate_systems(potential_projections, projection_directions, main_projection);
 
+			cv::Mat interpreter_out = cv::Mat::zeros(in->skeleton_image.size(), CV_8UC1);
+			for (auto& p : potential_projections)
+			{
+				for (auto& v : p.vertices)
+					cv::rectangle(interpreter_out, cv::Rect(v.x - 15, v.y - 15, 30, 30), 122, -1);
+
+				for (auto& e : p.cedges)
+					cv::line(interpreter_out, p.vertices[e.first], p.vertices[e.second], 255);
+			}
+
+			cv::imwrite(config->workspace_path() + "interpreter_out.pgm", interpreter_out);
+
 			auto out = std::make_unique<output>();
 			out->projection_directions = projection_directions;
 			out->main_projection = main_projection;

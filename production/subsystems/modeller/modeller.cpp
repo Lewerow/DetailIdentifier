@@ -11,6 +11,7 @@ VTK_MODULE_INIT(vtkRenderingOpenGL);
 #include <vtkImageData.h>
 #include <vtkSTLWriter.h>
 #include <vtkPLYWriter.h>
+#include <vtkTriangleFilter.h>
 #include <vtkPLYReader.h>
 #include <vtkSTLReader.h>
 #include <vtkSphereSource.h>
@@ -34,6 +35,7 @@ VTK_MODULE_INIT(vtkRenderingOpenGL);
 #include <vtkPolygon.h>
 #include <vtkCellArray.h>
 
+
 #include <boost/lexical_cast.hpp>
 
 #include <map>
@@ -41,7 +43,7 @@ VTK_MODULE_INIT(vtkRenderingOpenGL);
 #include <iostream>
 #include <set>
 
-const int MAX_DIFF = 70;
+const int MAX_DIFF = 30;
 
 
 namespace
@@ -146,18 +148,37 @@ namespace
 
 	void addFaces(const model3d& model, std::vector<std::vector<std::size_t> > per_plane_points, vtkSmartPointer<vtkAppendPolyData>& data)
 	{
+		std::cout << "Total planes: " << per_plane_points.size() << " plane. Searching for faces" << std::endl;
+		std::cout << "All edges: " << model.edges.size() << ". Searching for faces" << std::endl;
+
+		for (std::size_t i = 0; i < model.edges.size(); ++i)
+		{
+			std::cout << model.points[model.edges[i].first] << " to " << model.points[model.edges[i].second] << std::endl;
+		}
+
 		for (std::size_t i = 0; i < per_plane_points.size(); ++i)
 		{
+			std::cout << "Analyzing: " << i << " plane. Searching for faces" << std::endl;
+			std::cout << "Available points: " <<per_plane_points[i].size() << std::endl;
+			for (std::size_t k = 0; k < per_plane_points[i].size(); ++k)
+				std::cout << k << ".) " << model.points[per_plane_points[i][k]] << std::endl;
+
 			std::vector<std::size_t> current;
 			std::set<std::size_t> used;
-			while (per_plane_points.size() > 0)
+			while (per_plane_points[i].size() != used.size())
 			{
+//				std::cout << "Used: " << used.size() << " available: " << per_plane_points[i].size() << " ongoing: " << current.size() << std::endl;
+
 				if (current.empty())
 				{
 					if (used.size() == per_plane_points[i].size())
 						break;
 
-					auto k = std::find_if(per_plane_points[i].begin(), per_plane_points[i].end(), [&used](std::size_t i){return used.count(i) == 0; });
+					auto k = std::find_if(per_plane_points[i].begin(), per_plane_points[i].end(), [&used, &per_plane_points, i](std::size_t j){return used.count(j) == 0; });
+
+					if (k == per_plane_points[i].end())
+						break;
+
 					current.push_back(*k);
 					used.insert(*k);
 				}
@@ -165,39 +186,54 @@ namespace
 				bool found = false;
 				for (std::size_t j = 0; j < per_plane_points[i].size(); ++j)
 				{
-					if (std::find(current.begin(), current.end(), per_plane_points[i][j]) != current.end())
+//					std::cout << "For: " << per_plane_points[i][j] << " found: " << std::boolalpha << (std::find(current.begin(), current.end(), per_plane_points[i][j]) != current.end()) << std::endl;
+
+					if (std::find(current.begin(), current.end(), per_plane_points[i][j]) != current.end() && (per_plane_points[i][j] != current[0] || current.size() < 4))
 						continue;
 					
 					if (std::find_if(model.edges.begin(), model.edges.end(), [&current, &per_plane_points, i, j](std::pair<std::size_t, std::size_t> p)
 						{return (p.first == current.back() && p.second == per_plane_points[i][j]) || (p.second == current.back() && p.first == per_plane_points[i][j]); }) != model.edges.end())
 					{
+//						std::cout << "Adding next point: " << per_plane_points[i][j] << std::endl;
 						found = true;
-						current.push_back(j);
-						used.insert(j);
+						current.push_back(per_plane_points[i][j]);
+						used.insert(per_plane_points[i][j]);
 						break;
 					}
 				}
 
-				if (current.size() > 1 && current.front() == current.back())
+//				std::cout << "2. Used: " << used.size() << " available: " << per_plane_points[i].size() << " ongoing: " << current.size() << std::endl;
+				if (current.size() > 2 && current.front() == current.back())
 				{
 					current.pop_back();
 					found = false;
 				}
 
-				if (!found)
+				if (current.size() == 4 && (std::find_if(model.edges.begin(), model.edges.end(), [&current, &per_plane_points, i](std::pair<std::size_t, std::size_t> p)
+				{return (p.first == current.back() && p.second == current.front()) || (p.second == current.back() && p.first == current.front()); }) != model.edges.end()))
+				found = false;
+
+//				std::cout << "Found next point ? " << std::boolalpha << found << " current points: " << std::endl;
+/*				for (std::size_t k = 0; k < current.size(); ++k)
 				{
+					std::cout << k << ".) " << model.points[current[k]] << std::endl;
+				}
+*/
+				if (!found && current.size() > 2)
+				{
+					std::cout << "Found a face! Yay! Number of points: " << current.size() << std::endl;
+
 					vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-					for (std::size_t i = 0; i < current.size(); ++i)
-						points->InsertPoint(i, model.points[current[i]].x, model.points[current[i]].y, model.points[current[i]].z);
-
 					vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New();
 					polygon->GetPointIds()->SetNumberOfIds(current.size());
-
+					const int visibility_rate = 10;
 					for (std::size_t k = 0; k < current.size(); ++k)
+					{
+						points->InsertNextPoint(model.points[current[k]].x / visibility_rate, model.points[current[k]].y / visibility_rate, model.points[current[k]].z / visibility_rate);
+						std::cout << k << ".) " << model.points[current[k]] << std::endl;
 						polygon->GetPointIds()->SetId(k, k);
-
-
+					}
+				
 					vtkSmartPointer<vtkCellArray> cell = vtkSmartPointer<vtkCellArray>::New();
 					cell->InsertNextCell(polygon);
 
@@ -205,9 +241,47 @@ namespace
 					polys->SetPoints(points);
 					polys->SetPolys(cell);
 
-					data->SetInputData(polys);
-					current.clear();
+					vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+					triangleFilter->SetInputData(0, polys);
+					triangleFilter->Update();
+					
+					data->AddInputConnection(triangleFilter->GetOutputPort());
 				}
+				if (!found)
+					current.clear();
+			}
+
+			if (current.size() > 0)
+			{
+				std::cout << "Unable to create face from following " << current.size() << " points: " << std::endl;
+				for (std::size_t k = 0; k < current.size(); ++k)
+				{
+					std::cout << k << ".) " << model.points[current[k]] << std::endl;
+				}
+
+				vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+				vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New();
+				polygon->GetPointIds()->SetNumberOfIds(current.size());
+				const int visibility_rate = 10;
+				for (std::size_t k = 0; k < current.size(); ++k)
+				{
+					points->InsertNextPoint(model.points[current[k]].x / visibility_rate, model.points[current[k]].y / visibility_rate, model.points[current[k]].z / visibility_rate);
+					std::cout << k << ".) " << model.points[current[k]] << std::endl;
+					polygon->GetPointIds()->SetId(k, k);
+				}
+
+				vtkSmartPointer<vtkCellArray> cell = vtkSmartPointer<vtkCellArray>::New();
+				cell->InsertNextCell(polygon);
+
+				vtkSmartPointer<vtkPolyData> polys = vtkSmartPointer<vtkPolyData>::New();
+				polys->SetPoints(points);
+				polys->SetPolys(cell);
+
+				vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+				triangleFilter->SetInputData(0, polys);
+				triangleFilter->Update();
+
+				data->AddInputConnection(triangleFilter->GetOutputPort());
 			}
 		}
 	}
@@ -218,7 +292,7 @@ namespace
 
 		static int x = 0;
 		
-		vtkSmartPointer<vtkPLYWriter> stlWriter = vtkSmartPointer<vtkPLYWriter>::New();
+		vtkSmartPointer<vtkSTLWriter> stlWriter = vtkSmartPointer<vtkSTLWriter>::New();
 		vtkSmartPointer<vtkAppendPolyData> data = vtkSmartPointer<vtkAppendPolyData>::New();
 
 		std::vector<std::vector<std::size_t> > x_contours = align_contours_x(model);
@@ -228,30 +302,12 @@ namespace
 		addFaces(model, y_contours, data);
 		addFaces(model, z_contours, data);
 
-		std::map<std::size_t, std::set<std::size_t> > edges;
-		for (std::size_t i = 0; i < model.edges.size(); ++i)
-		{
-			if (edges[model.edges[i].first].count(model.edges[i].second) != 0)
-				continue;
-
-			edges[model.edges[i].first].insert(model.edges[i].second);
-			edges[model.edges[i].second].insert(model.edges[i].first);
-
-			vtkSmartPointer<vtkLineSource> line = vtkSmartPointer<vtkLineSource>::New();
-			line->SetPoint1(model.points[model.edges[i].first].x, model.points[model.edges[i].first].y, model.points[model.edges[i].first].z);
-			line->SetPoint2(model.points[model.edges[i].second].x, model.points[model.edges[i].second].y, model.points[model.edges[i].second].z);
-			line->Update();
-			
-			data->AddInputData(line->GetOutput());
-
-			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;		
-		}
-
 		stlWriter->AddInputConnection(data->GetOutputPort());
+		stlWriter->SetFileName(target.c_str());
 		stlWriter->Write();
 
 		// Read and display for verification
-		vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
+		vtkSmartPointer<vtkSTLReader> reader = vtkSmartPointer<vtkSTLReader>::New();
 		reader->SetFileName(target.c_str());
 		reader->Update();
 
