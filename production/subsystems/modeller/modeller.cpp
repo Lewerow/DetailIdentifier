@@ -28,6 +28,11 @@ VTK_MODULE_INIT(vtkRenderingOpenGL);
 #include <vtkActor.h>
 #include <vtkVoxelModeller.h>
 #include <vtkMarchingCubes.h>
+#include <vtkUndirectedGraph.h>
+#include <vtkGraphLayoutFilter.h>
+#include <vtkDelaunay2D.h>
+#include <vtkPolygon.h>
+#include <vtkCellArray.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -53,7 +58,161 @@ namespace
 		std::vector<std::pair<cv::Point3d, cv::Point3d> > pedges;
 	};
 
-	void load(const model3d& model, std::string target)
+	const int CONTOUR_DIFF = 40;	
+	std::vector<std::vector<std::size_t> > align_contours_x(model3d& model)
+	{
+		std::vector<std::vector<std::size_t> > res;
+		std::vector<int> available;
+		for (std::size_t i = 0; i < model.points.size(); ++i)
+		{
+			bool found = false;
+			for (std::size_t j = 0; j < available.size(); ++j)
+			{
+				if (std::abs(model.points[i].x - available[j]) < CONTOUR_DIFF)
+				{
+					model.points[i].x = available[j];
+					res[j].push_back(i);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				available.push_back(model.points[i].x);
+				res.push_back(std::vector<std::size_t>());
+				res.back().push_back(i);
+			}
+		}
+
+		return res;
+	}
+	std::vector<std::vector<std::size_t> > align_contours_y(model3d& model)
+	{
+		std::vector<std::vector<std::size_t> > res;
+		std::vector<int> available;
+		for (std::size_t i = 0; i < model.points.size(); ++i)
+		{
+			bool found = false;
+			for (std::size_t j = 0; j < available.size(); ++j)
+			{
+				if (std::abs(model.points[i].y - available[j]) < CONTOUR_DIFF)
+				{
+					model.points[i].y = available[j];
+					res[j].push_back(i);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				available.push_back(model.points[i].y);
+				res.push_back(std::vector<std::size_t>());
+				res.back().push_back(i);
+			}
+		}
+
+		return res;
+	}
+	std::vector<std::vector<std::size_t> > align_contours_z(model3d& model)
+	{
+		std::vector<std::vector<std::size_t> > res;
+		std::vector<int> available;
+		for (std::size_t i = 0; i < model.points.size(); ++i)
+		{
+			bool found = false;
+			for (std::size_t j = 0; j < available.size(); ++j)
+			{
+				if (std::abs(model.points[i].z - available[j]) < CONTOUR_DIFF)
+				{
+					model.points[i].z = available[j];
+					res[j].push_back(i);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				available.push_back(model.points[i].z);
+				res.push_back(std::vector<std::size_t>());
+				res.back().push_back(i);
+			}
+		}
+
+		return res;
+	}
+
+	void addFaces(const model3d& model, std::vector<std::vector<std::size_t> > per_plane_points, vtkSmartPointer<vtkAppendPolyData>& data)
+	{
+		for (std::size_t i = 0; i < per_plane_points.size(); ++i)
+		{
+			std::vector<std::size_t> current;
+			std::set<std::size_t> used;
+			while (per_plane_points.size() > 0)
+			{
+				if (current.empty())
+				{
+					if (used.size() == per_plane_points[i].size())
+						break;
+
+					auto k = std::find_if(per_plane_points[i].begin(), per_plane_points[i].end(), [&used](std::size_t i){return used.count(i) == 0; });
+					current.push_back(*k);
+					used.insert(*k);
+				}
+				
+				bool found = false;
+				for (std::size_t j = 0; j < per_plane_points[i].size(); ++j)
+				{
+					if (std::find(current.begin(), current.end(), per_plane_points[i][j]) != current.end())
+						continue;
+					
+					if (std::find_if(model.edges.begin(), model.edges.end(), [&current, &per_plane_points, i, j](std::pair<std::size_t, std::size_t> p)
+						{return (p.first == current.back() && p.second == per_plane_points[i][j]) || (p.second == current.back() && p.first == per_plane_points[i][j]); }) != model.edges.end())
+					{
+						found = true;
+						current.push_back(j);
+						used.insert(j);
+						break;
+					}
+				}
+
+				if (current.size() > 1 && current.front() == current.back())
+				{
+					current.pop_back();
+					found = false;
+				}
+
+				if (!found)
+				{
+					vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+					for (std::size_t i = 0; i < current.size(); ++i)
+						points->InsertPoint(i, model.points[current[i]].x, model.points[current[i]].y, model.points[current[i]].z);
+
+					vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New();
+					polygon->GetPointIds()->SetNumberOfIds(current.size());
+
+					for (std::size_t k = 0; k < current.size(); ++k)
+						polygon->GetPointIds()->SetId(k, k);
+
+
+					vtkSmartPointer<vtkCellArray> cell = vtkSmartPointer<vtkCellArray>::New();
+					cell->InsertNextCell(polygon);
+
+					vtkSmartPointer<vtkPolyData> polys = vtkSmartPointer<vtkPolyData>::New();
+					polys->SetPoints(points);
+					polys->SetPolys(cell);
+
+					data->SetInputData(polys);
+					current.clear();
+				}
+			}
+		}
+	}
+
+	void load(model3d& model, std::string target)
 	{
 		std::cout << "Displaying model" << std::endl;
 
@@ -62,18 +221,12 @@ namespace
 		vtkSmartPointer<vtkPLYWriter> stlWriter = vtkSmartPointer<vtkPLYWriter>::New();
 		vtkSmartPointer<vtkAppendPolyData> data = vtkSmartPointer<vtkAppendPolyData>::New();
 
-		std::cout << "Saving to file: " << target << std::endl;
-		stlWriter->SetFileName(target.c_str());
-		/*
-		for (std::size_t i = 0; i < model.points.size(); ++i)
-		{
-			std::cout << "Adding to model point: " << model.points[i] << std::endl;
-			vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
-			sphereSource->SetCenter(model.points[i].x, model.points[i].y, model.points[i].z);
-			sphereSource->SetRadius(30);
-			sphereSource->Update();
-			data->AddInputData(sphereSource->GetOutput());
-		}*/
+		std::vector<std::vector<std::size_t> > x_contours = align_contours_x(model);
+		std::vector<std::vector<std::size_t> > y_contours = align_contours_y(model);
+		std::vector<std::vector<std::size_t> > z_contours = align_contours_z(model);
+		addFaces(model, x_contours, data);
+		addFaces(model, y_contours, data);
+		addFaces(model, z_contours, data);
 
 		std::map<std::size_t, std::set<std::size_t> > edges;
 		for (std::size_t i = 0; i < model.edges.size(); ++i)
@@ -94,33 +247,7 @@ namespace
 			std::cout << "Line between: " << model.points[model.edges[i].first] << " and " << model.points[model.edges[i].second] << std::endl;		
 		}
 
-		double bounds[6];
-		data->GetOutput()->GetBounds(bounds);
-		for (unsigned int i = 0; i < 6; i += 2)
-		{
-			double range = bounds[i + 1] - bounds[i];
-			bounds[i] = bounds[i] - .1 * range;
-			bounds[i + 1] = bounds[i + 1] + .1 * range;
-		}
-
-		vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
-		double isoValue;
-		vtkSmartPointer<vtkVoxelModeller> voxelModeller = vtkSmartPointer<vtkVoxelModeller>::New();
-		voxelModeller->SetSampleDimensions(50, 50, 50);
-		voxelModeller->SetModelBounds(bounds);
-		voxelModeller->SetScalarTypeToFloat();
-		voxelModeller->SetMaximumDistance(.1);
-		voxelModeller->SetInputConnection(data->GetOutputPort());
-		voxelModeller->Update();
-		isoValue = 0.5;
-		volume->DeepCopy(voxelModeller->GetOutput());
-
-		vtkSmartPointer<vtkMarchingCubes> surface =	vtkSmartPointer<vtkMarchingCubes>::New();
-		surface->SetInputData(volume);
-		surface->ComputeNormalsOn();
-		surface->SetValue(0, isoValue);
-
-		stlWriter->AddInputConnection(surface->GetOutputPort());
+		stlWriter->AddInputConnection(data->GetOutputPort());
 		stlWriter->Write();
 
 		// Read and display for verification
